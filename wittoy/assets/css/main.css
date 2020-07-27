@@ -238,6 +238,7 @@ body {
        url('https://lib.baomitu.com/fonts/maven-pro/maven-pro-regular.woff') format('woff'), /* Modern Browsers */
        url('https://lib.baomitu.com/fonts/maven-pro/maven-pro-regular.ttf') format('truetype'), /* Safari, Android, iOS */
        url('https://lib.baomitu.com/fonts/maven-pro/maven-pro-regular.svg#MavenPro') format('svg'); /* Legacy iOS */
+  font-display: swap;
 }
 
 body, input, select, textarea {
