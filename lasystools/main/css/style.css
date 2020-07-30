@@ -1,4 +1,17 @@
-@import url("https://fonts.googleapis.com/css?family=Maven+Pro:400,700");
+@font-face {
+  font-family: 'Maven Pro';
+  font-style: normal;
+  font-weight: regular;
+  src: url('https://lib.baomitu.com/fonts/maven-pro/maven-pro-regular.eot'); /* IE9 Compat Modes */
+  src: local('Maven Pro'), local('MavenPro-Normal'),
+       url('https://lib.baomitu.com/fonts/maven-pro/maven-pro-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('https://lib.baomitu.com/fonts/maven-pro/maven-pro-regular.woff2') format('woff2'), /* Super Modern Browsers */
+       url('https://lib.baomitu.com/fonts/maven-pro/maven-pro-regular.woff') format('woff'), /* Modern Browsers */
+       url('https://lib.baomitu.com/fonts/maven-pro/maven-pro-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+       url('https://lib.baomitu.com/fonts/maven-pro/maven-pro-regular.svg#MavenPro') format('svg'); /* Legacy iOS */
+  font-display: swap;
+}
+
 body {
   font-family: "Maven Pro", sans-serif;
   padding-top: 70px;
