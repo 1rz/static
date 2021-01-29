@@ -68,37 +68,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Hexo优化AdSense代码加速整站</title>
-    <url>/archives/adsense-optimization/</url>
-    <content><![CDATA[<p>为Hexo icarus主题优化AdSense代码</p>
-<a id="more"></a>
-<h1 id="减少AdSense的JS请求"><a href="#减少AdSense的JS请求" class="headerlink" title="减少AdSense的JS请求"></a>减少AdSense的JS请求</h1><p>谷歌官方的代码</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&lt;script <span class="keyword">async</span> src=<span class="string">&quot;https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;</span>&gt;&lt;/script&gt;</span><br><span class="line">&lt;ins <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;adsbygoogle&quot;</span></span><br><span class="line">     style=<span class="string">&quot;display:block&quot;</span></span><br><span class="line">     data-ad-client=<span class="string">&quot;ca-pub-id&quot;</span></span><br><span class="line">     data-ad-slot=<span class="string">&quot;id&quot;</span></span><br><span class="line">     data-ad-format=<span class="string">&quot;auto&quot;</span></span><br><span class="line">     data-full-width-responsive=<span class="string">&quot;true&quot;</span>&gt;&lt;/ins&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">     (adsbygoogle = <span class="built_in">window</span>.adsbygoogle || []).push(&#123;&#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
-<p>分解一下，首先通过async异步请求加载adsbygoogle.js核心文件，待加载完成后再push到ins内，显示广告内容。</p>
-<p>当我们需要放入广告位时，就将该段代码放入。可是如果有多个广告位的时候，就会引用多个相同的JS。</p>
-<blockquote>
-<p>Q：如果我的网页上有多个广告单元，我是否要为每个广告单元添加  <code>&lt;script async src=&quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;&gt;&lt;/script&gt;</code></p>
-<p>A：不，不需要，adsbygoogle.js 可以一次性加载。</p>
-</blockquote>
-<p>上述是谷歌官方给的QA，由此可知我们不需要多次加载JS</p>
-<p>如果你有多个广告位，那就可以把该段引入JS的代码，放到<code>&lt;head&gt;</code>里，既可以达到一次载入JS，所有<code>&lt;ins&gt;</code>都可以接到广告。</p>
-<h1 id="JS监听加载"><a href="#JS监听加载" class="headerlink" title="JS监听加载"></a>JS监听加载</h1><p>将代码改为如下</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line"><span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">                <span class="keyword">let</span> script = <span class="built_in">document</span>.createElement(<span class="string">&quot;script&quot;</span>);</span><br><span class="line">                script.setAttribute(<span class="string">&quot;async&quot;</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">                script.src = <span class="string">&quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;</span>;</span><br><span class="line">                <span class="built_in">document</span>.body.appendChild(script);</span><br><span class="line">        &#125;, <span class="number">2e3</span>);</span><br><span class="line">&#125;</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
-<p>Hexo icarus v3.0则修改成</p>
-<figure class="highlight js"><figcaption><span>head.jsx</span></figcaption><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> adjs = <span class="string">`window.onload = function() &#123;</span></span><br><span class="line"><span class="string">            setTimeout(function() &#123;</span></span><br><span class="line"><span class="string">                let script = document.createElement(&quot;script&quot;);</span></span><br><span class="line"><span class="string">                script.setAttribute(&quot;async&quot;, &quot;&quot;);</span></span><br><span class="line"><span class="string">                script.src = &quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;;</span></span><br><span class="line"><span class="string">                document.body.appendChild(script);</span></span><br><span class="line"><span class="string">            &#125;, 2e3);&#125;`</span>;</span><br><span class="line"></span><br><span class="line">&#123;adsenseClientId ? <span class="xml"><span class="tag">&lt;<span class="name">script</span> <span class="attr">dangerouslySetInnerHTML</span>=<span class="string">&#123;&#123;</span> <span class="attr">__html:</span> <span class="attr">adjs</span> &#125;&#125;&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span> : <span class="literal">null</span>&#125;</span><br></pre></td></tr></table></figure>
-
-<p>转载自<a class="link"   href="https://51shenyun.cn/adsense_super/" >ShenYun<i class="fas fa-external-link-alt"></i></a>，<a class="link"   href="https://www.pearik.com/archives/adsense-optimization" >篱落闲栈<i class="fas fa-external-link-alt"></i></a>。</p>
-]]></content>
-      <categories>
-        <category>WebSite</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>AdSense</tag>
-        <tag>Icarus</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>AllinSSL：免费申请泛域名通配符证书</title>
     <url>/archives/allinssl/</url>
     <content><![CDATA[<p>免费申请由AllinSSL提供的泛域名证书</p>
@@ -162,6 +131,37 @@
       </tags>
   </entry>
   <entry>
+    <title>Hexo优化AdSense代码加速整站</title>
+    <url>/archives/adsense-optimization/</url>
+    <content><![CDATA[<p>为Hexo icarus主题优化AdSense代码</p>
+<a id="more"></a>
+<h1 id="减少AdSense的JS请求"><a href="#减少AdSense的JS请求" class="headerlink" title="减少AdSense的JS请求"></a>减少AdSense的JS请求</h1><p>谷歌官方的代码</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&lt;script <span class="keyword">async</span> src=<span class="string">&quot;https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;</span>&gt;&lt;/script&gt;</span><br><span class="line">&lt;ins <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;adsbygoogle&quot;</span></span><br><span class="line">     style=<span class="string">&quot;display:block&quot;</span></span><br><span class="line">     data-ad-client=<span class="string">&quot;ca-pub-id&quot;</span></span><br><span class="line">     data-ad-slot=<span class="string">&quot;id&quot;</span></span><br><span class="line">     data-ad-format=<span class="string">&quot;auto&quot;</span></span><br><span class="line">     data-full-width-responsive=<span class="string">&quot;true&quot;</span>&gt;&lt;/ins&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">     (adsbygoogle = <span class="built_in">window</span>.adsbygoogle || []).push(&#123;&#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>分解一下，首先通过async异步请求加载adsbygoogle.js核心文件，待加载完成后再push到ins内，显示广告内容。</p>
+<p>当我们需要放入广告位时，就将该段代码放入。可是如果有多个广告位的时候，就会引用多个相同的JS。</p>
+<blockquote>
+<p>Q：如果我的网页上有多个广告单元，我是否要为每个广告单元添加  <code>&lt;script async src=&quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;&gt;&lt;/script&gt;</code></p>
+<p>A：不，不需要，adsbygoogle.js 可以一次性加载。</p>
+</blockquote>
+<p>上述是谷歌官方给的QA，由此可知我们不需要多次加载JS</p>
+<p>如果你有多个广告位，那就可以把该段引入JS的代码，放到<code>&lt;head&gt;</code>里，既可以达到一次载入JS，所有<code>&lt;ins&gt;</code>都可以接到广告。</p>
+<h1 id="JS监听加载"><a href="#JS监听加载" class="headerlink" title="JS监听加载"></a>JS监听加载</h1><p>将代码改为如下</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line"><span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">                <span class="keyword">let</span> script = <span class="built_in">document</span>.createElement(<span class="string">&quot;script&quot;</span>);</span><br><span class="line">                script.setAttribute(<span class="string">&quot;async&quot;</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">                script.src = <span class="string">&quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;</span>;</span><br><span class="line">                <span class="built_in">document</span>.body.appendChild(script);</span><br><span class="line">        &#125;, <span class="number">2e3</span>);</span><br><span class="line">&#125;</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>Hexo icarus v3.0则修改成</p>
+<figure class="highlight js"><figcaption><span>head.jsx</span></figcaption><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> adjs = <span class="string">`window.onload = function() &#123;</span></span><br><span class="line"><span class="string">            setTimeout(function() &#123;</span></span><br><span class="line"><span class="string">                let script = document.createElement(&quot;script&quot;);</span></span><br><span class="line"><span class="string">                script.setAttribute(&quot;async&quot;, &quot;&quot;);</span></span><br><span class="line"><span class="string">                script.src = &quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;;</span></span><br><span class="line"><span class="string">                document.body.appendChild(script);</span></span><br><span class="line"><span class="string">            &#125;, 2e3);&#125;`</span>;</span><br><span class="line"></span><br><span class="line">&#123;adsenseClientId ? <span class="xml"><span class="tag">&lt;<span class="name">script</span> <span class="attr">dangerouslySetInnerHTML</span>=<span class="string">&#123;&#123;</span> <span class="attr">__html:</span> <span class="attr">adjs</span> &#125;&#125;&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span> : <span class="literal">null</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>转载自<a class="link"   href="https://51shenyun.cn/adsense_super/" >ShenYun<i class="fas fa-external-link-alt"></i></a>，<a class="link"   href="https://www.pearik.com/archives/adsense-optimization" >篱落闲栈<i class="fas fa-external-link-alt"></i></a>。</p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>AdSense</tag>
+        <tag>Icarus</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>安卓端实用运维软件</title>
     <url>/archives/android-tools/</url>
     <content><![CDATA[<p>删库从入门到跨平台（</p>
@@ -214,6 +214,20 @@
       </tags>
   </entry>
   <entry>
+    <title>Avicii Hi-res (44.1Khz/24Bit,2015之后)专辑</title>
+    <url>/archives/avicii/</url>
+    <content><![CDATA[<p>R.I.P Avcii</p>
+<a id="more"></a>
+<p><a class="link"   href="https://pan.wsl.pub/Music/Avicii/" >天翼云盘<i class="fas fa-external-link-alt"></i></a><br><a class="link"   href="https://pan.wsl.pub/OneDrive/Music/Avicii/" >OneDrive<i class="fas fa-external-link-alt"></i></a></p>
+]]></content>
+      <categories>
+        <category>Music</category>
+      </categories>
+      <tags>
+        <tag>Avicii</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>博客改动状况</title>
     <url>/archives/blog-rewrite/</url>
     <content><![CDATA[<p>Holy Shift</p>
@@ -233,20 +247,6 @@
       <categories>
         <category>Daily</category>
       </categories>
-  </entry>
-  <entry>
-    <title>Avicii Hi-res (44.1Khz/24Bit,2015之后)专辑</title>
-    <url>/archives/avicii/</url>
-    <content><![CDATA[<p>R.I.P Avcii</p>
-<a id="more"></a>
-<p><a class="link"   href="https://pan.wsl.pub/Music/Avicii/" >天翼云盘<i class="fas fa-external-link-alt"></i></a><br><a class="link"   href="https://pan.wsl.pub/OneDrive/Music/Avicii/" >OneDrive<i class="fas fa-external-link-alt"></i></a></p>
-]]></content>
-      <categories>
-        <category>Music</category>
-      </categories>
-      <tags>
-        <tag>Avicii</tag>
-      </tags>
   </entry>
   <entry>
     <title>利用OTG开启黑阈</title>
@@ -329,49 +329,6 @@
       </tags>
   </entry>
   <entry>
-    <title>CloudFlare Speed选项优化</title>
-    <url>/archives/cloudflare-speed-options/</url>
-    <content><![CDATA[<p>优化CloudFlare Rocket Loader与Browser Insights，加快网站加载速度（误）。</p>
-<a id="more"></a>
-<h1 id="Rocket-Loader"><a href="#Rocket-Loader" class="headerlink" title="Rocket Loader"></a>Rocket Loader</h1><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>什么是 Rocket Loader？</p>
-<blockquote>
-<p>Rocket Loader 会将您所有 JavaScript 的加载一直推迟到渲染之后再进行，从而优先处理您网站的内容（文本、图像、字体等）。在使用 JavaScript 的页面上，这可使您的用户获得更快加载的体验，并且可改善以下性能指标：<br>首次渲染时间 (TTFP)<br>首次内容渲染时间 (TTFCP)<br>首次有效渲染时间 (TTFMP)<br>文件加载<br><a class="link"   href="https://support.cloudflare.com/hc/en-us/articles/200168056-What-does-Rocket-Loader-do" >https://support.cloudflare.com/hc/en-us/articles/200168056-What-does-Rocket-Loader-do<i class="fas fa-external-link-alt"></i></a></p>
-</blockquote>
-<p>简单来说，就是延迟加载js。在页面加载时暂时注释js，先在页面中呈现其他资源（如CSS，图像等）。等到加载完成后，再去把js动态插回页面中，后浏览器加载完整页面。</p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://anak.coding.net/api/share/image/eef52c3f-7cc9-4eb7-9573-0b719cebfa5c"
-                      alt="Rocket Loader 开启前"
-                ></p>
-<p><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://anak.coding.net/api/share/image/c1cb6d81-ae36-4e21-9dc0-1b2aa738d422"
-                      alt="Rocket Loader 开启后"
-                ></p>
-<p>听上去功能不错，能有效优化网站的加载速度。但实际上，在国内，首次加载这个12k的JS文件都够你怀疑人生一辈子了，更别说可能会导致某些JS无法正常运行，如Google Adsense等。</p>
-<p>值得一提的是，百度云加速同样有此功能（JavaScript快速加载），得于国内百度云加速速度还算满意（总比CloudFlare强），这个功能还是值得开启的。<br>附·开启方法：<del>1.氪金</del> 2.自定义规则</p>
-<h2 id="优化方案"><a href="#优化方案" class="headerlink" title="优化方案"></a>优化方案</h2><p>如果想让Rocket Loader不优化特定脚本，通过添加 <code>data-cfasync=“false”</code> 属性到相关js标签，即可让Rocket Loader忽略此js。</p>
-<script data-cfasync="false" src="/javascript.js"></script>
-<blockquote>
-<p>其中 <code>&#39;data-cfasync&#39;</code> 属性必须添加在 <code>&#39;src&#39;</code> 属性之前。 </p>
-</blockquote>
-<p>或者简单粗暴，直接关闭 <code>Rocket Loader</code></p>
-<h1 id="Browser-Insights"><a href="#Browser-Insights" class="headerlink" title="Browser Insights"></a>Browser Insights</h1><h2 id="介绍-1"><a href="#介绍-1" class="headerlink" title="介绍"></a>介绍</h2><blockquote>
-<p>使用 Browser Insights 测量您的网站的性能和用户的加载时间。<br><a class="link"   href="https://support.cloudflare.com/hc/en-us/articles/360033929991-Cloudflare-Browser-Insights" >https://support.cloudflare.com/hc/en-us/articles/360033929991-Cloudflare-Browser-Insights<i class="fas fa-external-link-alt"></i></a></p>
-</blockquote>
-<p>测量您的网站的性能和用户的加载时间，对于国内用户就是个没啥卵用的功能。加载这个功能的JS比打开CloudFlare官网还慢。</p>
-<h2 id="优化方案-1"><a href="#优化方案-1" class="headerlink" title="优化方案"></a>优化方案</h2><p>不多BB，直接关闭</p>
-]]></content>
-      <categories>
-        <category>WebSite</category>
-      </categories>
-      <tags>
-        <tag>CloudFlare</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Coding文件网盘实现图床与文件直链下载</title>
     <url>/archives/coding-netdisk/</url>
     <content><![CDATA[<p>Coding团队版无限空间文件网盘，实现文件高速直链下载与图床程序。</p>
@@ -447,6 +404,49 @@
         <tag>Coding</tag>
         <tag>网盘</tag>
         <tag>图床</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>CloudFlare Speed选项优化</title>
+    <url>/archives/cloudflare-speed-options/</url>
+    <content><![CDATA[<p>优化CloudFlare Rocket Loader与Browser Insights，加快网站加载速度（误）。</p>
+<a id="more"></a>
+<h1 id="Rocket-Loader"><a href="#Rocket-Loader" class="headerlink" title="Rocket Loader"></a>Rocket Loader</h1><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>什么是 Rocket Loader？</p>
+<blockquote>
+<p>Rocket Loader 会将您所有 JavaScript 的加载一直推迟到渲染之后再进行，从而优先处理您网站的内容（文本、图像、字体等）。在使用 JavaScript 的页面上，这可使您的用户获得更快加载的体验，并且可改善以下性能指标：<br>首次渲染时间 (TTFP)<br>首次内容渲染时间 (TTFCP)<br>首次有效渲染时间 (TTFMP)<br>文件加载<br><a class="link"   href="https://support.cloudflare.com/hc/en-us/articles/200168056-What-does-Rocket-Loader-do" >https://support.cloudflare.com/hc/en-us/articles/200168056-What-does-Rocket-Loader-do<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<p>简单来说，就是延迟加载js。在页面加载时暂时注释js，先在页面中呈现其他资源（如CSS，图像等）。等到加载完成后，再去把js动态插回页面中，后浏览器加载完整页面。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/eef52c3f-7cc9-4eb7-9573-0b719cebfa5c"
+                      alt="Rocket Loader 开启前"
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/c1cb6d81-ae36-4e21-9dc0-1b2aa738d422"
+                      alt="Rocket Loader 开启后"
+                ></p>
+<p>听上去功能不错，能有效优化网站的加载速度。但实际上，在国内，首次加载这个12k的JS文件都够你怀疑人生一辈子了，更别说可能会导致某些JS无法正常运行，如Google Adsense等。</p>
+<p>值得一提的是，百度云加速同样有此功能（JavaScript快速加载），得于国内百度云加速速度还算满意（总比CloudFlare强），这个功能还是值得开启的。<br>附·开启方法：<del>1.氪金</del> 2.自定义规则</p>
+<h2 id="优化方案"><a href="#优化方案" class="headerlink" title="优化方案"></a>优化方案</h2><p>如果想让Rocket Loader不优化特定脚本，通过添加 <code>data-cfasync=“false”</code> 属性到相关js标签，即可让Rocket Loader忽略此js。</p>
+<script data-cfasync="false" src="/javascript.js"></script>
+<blockquote>
+<p>其中 <code>&#39;data-cfasync&#39;</code> 属性必须添加在 <code>&#39;src&#39;</code> 属性之前。 </p>
+</blockquote>
+<p>或者简单粗暴，直接关闭 <code>Rocket Loader</code></p>
+<h1 id="Browser-Insights"><a href="#Browser-Insights" class="headerlink" title="Browser Insights"></a>Browser Insights</h1><h2 id="介绍-1"><a href="#介绍-1" class="headerlink" title="介绍"></a>介绍</h2><blockquote>
+<p>使用 Browser Insights 测量您的网站的性能和用户的加载时间。<br><a class="link"   href="https://support.cloudflare.com/hc/en-us/articles/360033929991-Cloudflare-Browser-Insights" >https://support.cloudflare.com/hc/en-us/articles/360033929991-Cloudflare-Browser-Insights<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<p>测量您的网站的性能和用户的加载时间，对于国内用户就是个没啥卵用的功能。加载这个功能的JS比打开CloudFlare官网还慢。</p>
+<h2 id="优化方案-1"><a href="#优化方案-1" class="headerlink" title="优化方案"></a>优化方案</h2><p>不多BB，直接关闭</p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>CloudFlare</tag>
       </tags>
   </entry>
   <entry>
