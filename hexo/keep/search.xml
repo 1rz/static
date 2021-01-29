@@ -1,0 +1,1237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>ADGuard Home：自建去广告的安全DNS服务器</title>
+    <url>/archives/adguard-home/</url>
+    <content><![CDATA[<p>在VPS上安装ADGuard Home，自建无广告，采用DoH/DoT协议的安全 DNS 服务器</p>
+<a id="more"></a>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>家里的宽带是广电&amp;长宽，虽然二级宽带运营商不太建议改DNS，但面对乱七八糟的AD与劫持，电脑端倒可以通过浏览器插件屏蔽AD，手机端就拉闸了（此处@Chrome）</p>
+<p>部分个人设备因无ROOT无法修改Hosts，且浏览器Chrome用习惯了。这边的漏油器是国内伪·御三家之一的高端大气上档次的低配普联，指望刷机装插件的路子没了。</p>
+<p>考虑到安卓9的私人DNS功能，才发现可以用采用DoH/DoT协议且去广告的DNS来屏蔽花里胡哨的玩意儿。<br>无奈硬件不给力，就只能用VPS安装ADGuard Home将就着用了。</p>
+<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p><del>网上一搜一大把的应该不用水了吧.jpg</del></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">wget https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gz</span><br><span class="line">tar -xzvf AdGuardHome_linux_amd64.tar.gz</span><br><span class="line"><span class="built_in">cd</span> AdGuardHome</span><br><span class="line">./AdGuardHome -s install</span><br></pre></td></tr></table></figure>
+<p>算了顺便水了一个Linux 64位一键懒人jio本<br><code>wget -qO- https://cdn.wsl.pub/shell/ADGuard | sh</code></p>
+<hr>
+<p>安装完成后，浏览器访问 <code>http://你的服务器ip:3000</code> 后进入ADGuard Home配置。</p>
+<p>在 <code>网页管理界面</code> 中</p>
+<p><code>监听接口 - 端口</code> 改成非80，这边我设置的是3000端口，<br><code>DNS 服务器</code> 的 <code>监听接口- 端口</code> 理论上是53，但国内的政策是禁止个人用户自建DNS，所以自行考虑（</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/04b91343-ce11-4d3a-a56c-08b5a71c8287"
+                     
+                ></p>
+<p>用户名密码和设定并记住，跳过没人会看的设置指导后，登录到控制台。</p>
+<h1 id="设置"><a href="#设置" class="headerlink" title="设置"></a>设置</h1><h2 id="DNS-设置"><a href="#DNS-设置" class="headerlink" title="DNS 设置"></a>DNS 设置</h2><p>可参考下面我的设置</p>
+<h3 id="上游-DNS-服务器"><a href="#上游-DNS-服务器" class="headerlink" title="上游 DNS 服务器"></a>上游 DNS 服务器</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">tls:&#x2F;&#x2F;dns.google:853</span><br><span class="line">https:&#x2F;&#x2F;1.1.1.1&#x2F;dns-query</span><br><span class="line">tls:&#x2F;&#x2F;1.1.1.1:853</span><br><span class="line">https:&#x2F;&#x2F;doh.pub&#x2F;dns-query</span><br><span class="line">tls:&#x2F;&#x2F;dns.pub:853</span><br></pre></td></tr></table></figure>
+<h3 id="Bootstrap-DNS-服务器"><a href="#Bootstrap-DNS-服务器" class="headerlink" title="Bootstrap DNS 服务器"></a>Bootstrap DNS 服务器</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">223.5.5.5</span><br><span class="line">119.29.29.29</span><br><span class="line">1.0.0.1</span><br></pre></td></tr></table></figure>
+<h3 id="DNS服务设定"><a href="#DNS服务设定" class="headerlink" title="DNS服务设定"></a>DNS服务设定</h3><p>速度限制0就行（基本上就你一个人用.jpg）<br>如果 <code>上游 DNS 服务器</code> 设置的是国外DNS的话，这里推荐打开EDNS</p>
+<h3 id="DNS缓存配置"><a href="#DNS缓存配置" class="headerlink" title="DNS缓存配置"></a>DNS缓存配置</h3><p>通常默认即可</p>
+<h2 id="配置DoH-DoT"><a href="#配置DoH-DoT" class="headerlink" title="配置DoH/DoT"></a>配置DoH/DoT</h2><p><code>设置 - 加密设置</code></p>
+<p>启动加密，服务器名称填写你的域名，全文以 <code>dns.dns.dns</code> 为例。</p>
+<p>HTTPS端口设置成非 <code>443</code> ，我这边的是 <code>3443</code><br>DNS-over-TLS 端口默认 <code>853</code><br>证书设置上，推荐acme.sh一套完事，也可以配合宝塔/Oneinstack/lnmp等面板的自动证书设置。</p>
+<blockquote>
+<p>注：因为采用Nginx反向代理，故无须勾选HTTPS自动重定向</p>
+</blockquote>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/53ab9510-0ab3-40ea-b333-3dda1b9df49f"
+                     
+                ></p>
+<p>Nginx配置：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">server</span><br><span class="line">&#123;</span><br><span class="line">    listen 80;</span><br><span class="line">    server_name dns.dns.dns; # 填写对应域名</span><br><span class="line">    return 301 https:&#x2F;&#x2F;$host$request_uri;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server</span><br><span class="line">&#123;</span><br><span class="line">	listen 443 ssl http2;</span><br><span class="line">    server_name dns.dns.dns; # 填写对应域名</span><br><span class="line">    index index.html index.htm;</span><br><span class="line"></span><br><span class="line">    # 证书路径配置</span><br><span class="line">    ssl_certificate &#x2F;var&#x2F;nginx&#x2F;ssl&#x2F;fullchain.pem;</span><br><span class="line">    ssl_certificate_key &#x2F;var&#x2F;nginx&#x2F;ssl&#x2F;privkey.pem; </span><br><span class="line">    ssl_protocols TLSv1.2 TLSv1.3;</span><br><span class="line">    ssl_ciphers EECDH+CHACHA20:EECDH+CHACHA20-draft:EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5;</span><br><span class="line">    ssl_prefer_server_ciphers off;</span><br><span class="line">    ssl_session_cache shared:SSL:10m;</span><br><span class="line">    ssl_session_timeout 10m;</span><br><span class="line"></span><br><span class="line">    error_page 497  https:&#x2F;&#x2F;$host$request_uri;</span><br><span class="line"></span><br><span class="line">    location &#x2F; &#123;</span><br><span class="line">        proxy_set_header Host $host;</span><br><span class="line">        proxy_pass http:&#x2F;&#x2F;127.0.0.1:3000;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    location &#x2F;dns-query &#123;</span><br><span class="line">        proxy_http_version 1.1;</span><br><span class="line">        proxy_buffering off;</span><br><span class="line">        proxy_redirect off;</span><br><span class="line">        proxy_set_header Host $host;</span><br><span class="line">        proxy_pass https:&#x2F;&#x2F;dns.dns.dns:3443&#x2F;dns-query; #填写对应域名，注意填写的是https以及后面的端口</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    error_log  &#x2F;var&#x2F;log&#x2F;nginx&#x2F;adguard_error.log;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="过滤规则"><a href="#过滤规则" class="headerlink" title="过滤规则"></a>过滤规则</h1><p>过滤器 - DNS封锁清单<br>自行添加规则，我这里用的是 <a class="link"   href="https://github.com/privacy-protection-tools/anti-AD" >Anti-AD<i class="fas fa-external-link-alt"></i></a> ，基本上屏蔽了乱七八糟的广告</p>
+<h1 id="设备设定DNS"><a href="#设备设定DNS" class="headerlink" title="设备设定DNS"></a>设备设定DNS</h1><p>安卓机：设置 - 网络 - 私人DNS 输入你的地址即可</p>
+<p>电脑端:</p>
+<ul>
+<li>Chrome/Edge： 设置 - 隐私和安全性 - 安全性 - 进阶 - 使用安全DNS<br>包含自订 输入你的地址即可</li>
+<li>FireFox：选项 - 常规 - 网络设置 - 启用基于 HTTPS 的 DNS 自定义 输入你的地址即可</li>
+</ul>
+<p>最终成果大概就这</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/b67f4fea-10ed-47e4-9e8b-1c80e415fed5"
+                     
+                ></p>
+<h1 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h1><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#启动</span></span><br><span class="line">systemctl start AdGuardHome</span><br><span class="line"><span class="comment">#开机自启</span></span><br><span class="line">systemctl <span class="built_in">enable</span> AdGuardHome</span><br><span class="line"><span class="comment">#重启</span></span><br><span class="line">systemctl restart AdGuardHome</span><br><span class="line"><span class="comment">#停止</span></span><br><span class="line">systemctl stop AdGuardHome</span><br></pre></td></tr></table></figure>
+<p>如果依旧无法使用，请检查端口是否监听/开放。</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>ADGuard Home</tag>
+        <tag>DoH/DoT</tag>
+        <tag>DNS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hexo优化AdSense代码加速整站</title>
+    <url>/archives/adsense-optimization/</url>
+    <content><![CDATA[<p>为Hexo icarus主题优化AdSense代码</p>
+<a id="more"></a>
+<h1 id="减少AdSense的JS请求"><a href="#减少AdSense的JS请求" class="headerlink" title="减少AdSense的JS请求"></a>减少AdSense的JS请求</h1><p>谷歌官方的代码</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&lt;script <span class="keyword">async</span> src=<span class="string">&quot;https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;</span>&gt;&lt;/script&gt;</span><br><span class="line">&lt;ins <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;adsbygoogle&quot;</span></span><br><span class="line">     style=<span class="string">&quot;display:block&quot;</span></span><br><span class="line">     data-ad-client=<span class="string">&quot;ca-pub-id&quot;</span></span><br><span class="line">     data-ad-slot=<span class="string">&quot;id&quot;</span></span><br><span class="line">     data-ad-format=<span class="string">&quot;auto&quot;</span></span><br><span class="line">     data-full-width-responsive=<span class="string">&quot;true&quot;</span>&gt;&lt;/ins&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">     (adsbygoogle = <span class="built_in">window</span>.adsbygoogle || []).push(&#123;&#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>分解一下，首先通过async异步请求加载adsbygoogle.js核心文件，待加载完成后再push到ins内，显示广告内容。</p>
+<p>当我们需要放入广告位时，就将该段代码放入。可是如果有多个广告位的时候，就会引用多个相同的JS。</p>
+<blockquote>
+<p>Q：如果我的网页上有多个广告单元，我是否要为每个广告单元添加  <code>&lt;script async src=&quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;&gt;&lt;/script&gt;</code></p>
+<p>A：不，不需要，adsbygoogle.js 可以一次性加载。</p>
+</blockquote>
+<p>上述是谷歌官方给的QA，由此可知我们不需要多次加载JS</p>
+<p>如果你有多个广告位，那就可以把该段引入JS的代码，放到<code>&lt;head&gt;</code>里，既可以达到一次载入JS，所有<code>&lt;ins&gt;</code>都可以接到广告。</p>
+<h1 id="JS监听加载"><a href="#JS监听加载" class="headerlink" title="JS监听加载"></a>JS监听加载</h1><p>将代码改为如下</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line"><span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">                <span class="keyword">let</span> script = <span class="built_in">document</span>.createElement(<span class="string">&quot;script&quot;</span>);</span><br><span class="line">                script.setAttribute(<span class="string">&quot;async&quot;</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">                script.src = <span class="string">&quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;</span>;</span><br><span class="line">                <span class="built_in">document</span>.body.appendChild(script);</span><br><span class="line">        &#125;, <span class="number">2e3</span>);</span><br><span class="line">&#125;</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>Hexo icarus v3.0则修改成</p>
+<figure class="highlight js"><figcaption><span>head.jsx</span></figcaption><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> adjs = <span class="string">`window.onload = function() &#123;</span></span><br><span class="line"><span class="string">            setTimeout(function() &#123;</span></span><br><span class="line"><span class="string">                let script = document.createElement(&quot;script&quot;);</span></span><br><span class="line"><span class="string">                script.setAttribute(&quot;async&quot;, &quot;&quot;);</span></span><br><span class="line"><span class="string">                script.src = &quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;;</span></span><br><span class="line"><span class="string">                document.body.appendChild(script);</span></span><br><span class="line"><span class="string">            &#125;, 2e3);&#125;`</span>;</span><br><span class="line"></span><br><span class="line">&#123;adsenseClientId ? <span class="xml"><span class="tag">&lt;<span class="name">script</span> <span class="attr">dangerouslySetInnerHTML</span>=<span class="string">&#123;&#123;</span> <span class="attr">__html:</span> <span class="attr">adjs</span> &#125;&#125;&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span> : <span class="literal">null</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>转载自<a class="link"   href="https://51shenyun.cn/adsense_super/" >ShenYun<i class="fas fa-external-link-alt"></i></a>，<a class="link"   href="https://www.pearik.com/archives/adsense-optimization" >篱落闲栈<i class="fas fa-external-link-alt"></i></a>。</p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>AdSense</tag>
+        <tag>Icarus</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>AllinSSL：免费申请泛域名通配符证书</title>
+    <url>/archives/allinssl/</url>
+    <content><![CDATA[<p>免费申请由AllinSSL提供的泛域名证书</p>
+<a id="more"></a>
+<p>虽然现在有各种各样的免费证书申请了，但免费的通配符证书这玩意儿还是很少见的，除去目前市场上的野卡AlphaSSL，估计就只有在AllinSSL里能方便快捷地白嫖双倍的通配符证书了（</p>
+<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><blockquote>
+<p>AllinSSL Co.Ltd面向全球提供公开信任的数字证书、网站安全服务, 拥有专业的PKI/CA安全技术服务团队, 专业程度质量值得信赖。 已经同全球知名权威证书颁发机构 Sectigo (Formerly Comodo CA) 达成授权合作, 专为亚太地区用户提供公开信任的数字证书。数字证书产品包含 多域名SSL证书、单域名SSL证书、通配符SSL证书 、企业OV SSL证书、国际认证EV SSL证书、公网IP地址证书、微软(Microsoft)软件代码证书、电子邮件签名证书、Adobe PDF电子签名证书等。<br><a class="link"   href="https://allinssl.com/zh/page/about.html" >https://allinssl.com/zh/page/about.html<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<p>其中可以白嫖的是3个月的通配符证书，分别是：</p>
+<p><a class="link"   href="https://allinssl.com/zh/client/digitalcert/create/25" >CrazySSL Free Certificate<i class="fas fa-external-link-alt"></i></a> 与 <a class="link"   href="https://allinssl.com/zh/client/digitalcert/create/26" >UbiquiTLS™ Free SSL<i class="fas fa-external-link-alt"></i></a></p>
+<h1 id="证书申请"><a href="#证书申请" class="headerlink" title="证书申请"></a>证书申请</h1><h2 id="注册-登录"><a href="#注册-登录" class="headerlink" title="注册/登录"></a>注册/登录</h2><p>AllinSSL <a class="link"   href="https://allinssl.com/zh/client/register" >注册<i class="fas fa-external-link-alt"></i></a> 或 <a class="link"   href="https://allinssl.com/zh/client/login" >登录<i class="fas fa-external-link-alt"></i></a> 后，选择需要的SSL证书地址进行购买创建。</p>
+<p>下文操作以创建CrazySSL证书为例。</p>
+<h2 id="创建证书"><a href="#创建证书" class="headerlink" title="创建证书"></a>创建证书</h2><p>csr可由系统自动生成，也可以手动上传生成的csr。</p>
+<p>由于要申请的是泛域名证书，填写域名的时候要用通配符星号代替，如图片中的 <code>*.wittoy.com</code><br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/2c6c6b33-ee32-454a-958c-d1fc6bee59b7"
+                      alt="创建证书"
+                ></p>
+<h2 id="域名验证"><a href="#域名验证" class="headerlink" title="域名验证"></a>域名验证</h2><p>域名验证有文件验证、DNS验证、邮箱验证，根据方便程度自行选择验证方式。这里推荐文件验证，简单粗暴。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/99607950-86ab-4410-b30f-2b5007f03ed2"
+                     
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/87f080c3-2390-4323-83a4-55d09bfb1c53"
+                     
+                ></p>
+<p>验证成功后保存提交，只须坐和放宽等待证书颁发。</p>
+<h2 id="下载证书"><a href="#下载证书" class="headerlink" title="下载证书"></a>下载证书</h2><p>颁发成功后根据自己服务器类型，下载对应的证书和密钥即可食用。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/4959baf9-1d78-455e-8790-f9bf9f58131c"
+                     
+                ></p>
+<p>至此基本大功告成，Enjoy it.</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/0a03e65f-2459-459a-92cf-65fdf87ced1f"
+                      alt="示例"
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/01b02da5-c055-44e5-814f-58e113c7f06f"
+                      alt="示例"
+                ></p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>SSL</tag>
+        <tag>AllinSSL</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>安卓端实用运维软件</title>
+    <url>/archives/android-tools/</url>
+    <content><![CDATA[<p>删库从入门到跨平台（</p>
+<a id="more"></a>
+<p>作为一名随时可能把服务器搞炸的人来说，如果恰好手边没有电脑，服务器却土豆了怎么办？那只能顶着用移动设备救个急了。</p>
+<hr>
+<h1 id="SSH连接软件"><a href="#SSH连接软件" class="headerlink" title="SSH连接软件"></a>SSH连接软件</h1><p>这里比较有名的是<a class="link"   href="https://play.google.com/store/apps/details?id=com.server.auditor.ssh.client" >Termius<i class="fas fa-external-link-alt"></i></a>与<a class="link"   href="https://play.google.com/store/apps/details?id=com.sonelli.juicessh" >JuiceSSH<i class="fas fa-external-link-alt"></i></a>，两者之间有以下特点。</p>
+<h2 id="共同点"><a href="#共同点" class="headerlink" title="共同点"></a>共同点</h2><p>支持SSH，Telnet，Mosh，本地设备连接；支持生成，导入和导出密钥，支持密码或密钥认证；支持XTerm-256色，VT100等终端类型；有端口转发²，代码段¹²，AWS EC2导入¹²，同步与备份¹²，主屏幕小工具¹²，个性化配色方案，OTG键盘等功能；软件安全锁²，采用AES-256加密数据，支持二次身份认证（OTP），无广告。</p>
+<h2 id="不同点"><a href="#不同点" class="headerlink" title="不同点"></a>不同点</h2><h3 id="Termius"><a href="#Termius" class="headerlink" title="Termius"></a>Termius</h3><p>支持SSH Agent Forwarding¹，Http/Socks5代理¹，Digital Ocean主机导入¹，软件指纹锁¹，多个主机保存并运行代码片段¹，SFTP连接¹，跨设备同步¹，多设备同步保存或运行代码¹，终端标签¹，Cli工具同步ssh/config¹，自动OS识别，vanilla终端类型，个性化字体，只支持英文。<br>高级版采用订阅制，8.33$/m <del>（留下了没有钱的泪水)</del>（GitHub学生包白嫖真香）。</p>
+<h3 id="JuiceSSH"><a href="#JuiceSSH" class="headerlink" title="JuiceSSH"></a>JuiceSSH</h3><p>有丰富的插件<del>（一点都不）</del>，支持简体中文，与Tasker插件有各种玩法。<br>高级版采用买断制，39.90HK即可终身食用。</p>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>个人还是喜欢用JuiceSSH（别问，问就是没钱），虽然在Google Play已停更且对Android 10兼容不太友好（不适配原生全面屏），但比较实用。</p>
+<blockquote>
+<p>注：¹.Termius高级功能。 ².JuiceSSH高级功能。</p>
+</blockquote>
+<hr>
+<h1 id="其他实用软件"><a href="#其他实用软件" class="headerlink" title="其他实用软件"></a>其他实用软件</h1><h2 id="Best-Trace"><a href="#Best-Trace" class="headerlink" title="Best Trace"></a>Best Trace</h2><p>由ipip.net推出的全终端Trace软件，是ipip.net基于Geo-IP库及rDNS数据库，精确到省级。能显示ASN，地图图像，支持IPv4，IPv6。</p>
+<p>妈妈再也不用担心我买的机器是假的GIA CN2辣！<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/ea39a70e-5c8e-4e6b-bd9b-cad1cd2a47e7"
+                      alt="DMIT GIA CN2(6-9跳59.43.*)"
+                ><br></br><br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/cc5f9548-c492-4e4a-b455-ef31b0217b5e"
+                      alt="DMIT HKG IPv6(不愧是中国奠信)"
+                ><br>下载地址：<a class="link"   href="https://www.coolapk.com/apk/net.ipip.traceroute" >CoolApk<i class="fas fa-external-link-alt"></i></a> <a class="link"   href="https://cdn.ipip.net/17mon/besttrace.apk" >IPIP.NET<i class="fas fa-external-link-alt"></i></a></p>
+<hr>
+<h2 id="HE-Network-Tools"><a href="#HE-Network-Tools" class="headerlink" title="HE Network Tools"></a>HE Network Tools</h2><p>由Hurricane Electric（飓风电子网络公司）发行的一款软件。<br>同样已停更多年（。同类软件有很多可替代，这里推荐的原因是<br><del>我永远喜欢Hurricane Electric（超大声）</del><br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/2167857b-16aa-4053-973e-c9dcadf1facd"
+                     
+                ><br></br><br>支持ARP，局域网发现，域名DNS记录查询，IP计算器，MAC前24位计算，Iperf2/3（客户端），Ping，Traceroute，TCP端口扫描，Whois，NDP，SSL/TLS分析（这个很实用）等工具。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/c843b294-f629-4852-9ddc-fbd9098d8ce7"
+                      alt="因安卓版本过高而字体变紫且不支持原生全面屏的屑软件"
+                ><br>下载地址：<a class="link"   href="https://play.google.com/store/apps/details?id=net.he.networktools" >Google Play<i class="fas fa-external-link-alt"></i></a></p>
+]]></content>
+      <categories>
+        <category>Android</category>
+        <category>Tools</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>ssh</tag>
+        <tag>tools</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Avicii Hi-res (44.1Khz/24Bit,2015之后)专辑</title>
+    <url>/archives/avicii/</url>
+    <content><![CDATA[<p>R.I.P Avcii</p>
+<a id="more"></a>
+<p><a class="link"   href="https://pan.wsl.pub/Music/Avicii/" >天翼云盘<i class="fas fa-external-link-alt"></i></a><br><a class="link"   href="https://pan.wsl.pub/OneDrive/Music/Avicii/" >OneDrive<i class="fas fa-external-link-alt"></i></a></p>
+]]></content>
+      <categories>
+        <category>Music</category>
+      </categories>
+      <tags>
+        <tag>Avicii</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>博客改动状况</title>
+    <url>/archives/blog-rewrite/</url>
+    <content><![CDATA[<p>Holy Shift</p>
+<a id="more"></a>
+<p>放假回来后，苦于<del>过于清闲</del>，顺手打理了下这玩意儿。</p>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1308819085&auto=0&height=66"></iframe>
+
+<h1 id="主题更新"><a href="#主题更新" class="headerlink" title="主题更新"></a>主题更新</h1><blockquote>
+<p>达成成就：一年换一个主题.jpg</p>
+</blockquote>
+<p>随便改了一天，虽然代码压缩以及全局cdn等优化，评论系统更换（丢数据*2）以及乱七八糟的个人元素（指好几把炫酷的特效）等还没加进去的玩意儿······<br>管他呢，上线了再说。（pjax真香!）</p>
+<h1 id="评论更新"><a href="#评论更新" class="headerlink" title="评论更新"></a>评论更新</h1><p>由于 <code>valine</code> 多年失修，<del>预计打算估计也许可能大概</del>换成 <code>waline</code> ，主要是 <code>valine</code> 的访客统计蛮香的，想继续保持。（代码都搬这个新主题来了）<br>初步了解了下大概，又是一个丢评论的冥场面（</p>
+<h1 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h1><p>放假这些天里，毕竟刚过完期末考试，人有点废（确实）<br>除了打游戏就睡觉。买了一堆diy产品（电子垃圾）苦于没工具在吃灰中。</p>
+<hr>
+<p>同元旦前夕的火车的错过，异地恋的终止，也许是新的开端。<br>希望过个好年.jpg</p>
+]]></content>
+      <categories>
+        <category>Daily</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>利用OTG开启黑阈</title>
+    <url>/archives/brevent/</url>
+    <content><![CDATA[<p>已ROOT安卓手机给未ROOT安卓手机开启黒域</p>
+<a id="more"></a>
+<h1 id="所需工具"><a href="#所需工具" class="headerlink" title="所需工具"></a>所需工具</h1><ol>
+<li>一台需要开启黑阈的安卓手机</li>
+<li>另一台安卓手机（支持OTG且有ROOT）</li>
+<li>一根OTG线还有一根数据线。<blockquote>
+<p><del>如果你手机支持网络ADB调试，可直接开启黑阈</del><br>新版本柳大已删除此操作</p>
+</blockquote>
+</li>
+</ol>
+<p>下载并安装所需工具 </p>
+<p><a class="link"   href="https://www.coolapk.com/apk/crixec.adbtoolkitsinstall" >ADB工具安装器<i class="fas fa-external-link-alt"></i></a> </p>
+<p><a class="link"   href="https://www.coolapk.com/apk/jackpal.androidterm" >终端模拟器<i class="fas fa-external-link-alt"></i></a></p>
+<h1 id="连接手机"><a href="#连接手机" class="headerlink" title="连接手机"></a>连接手机</h1><p>开启USB调试并连接手机</p>
+<p><del>输入命令</del><br><del>SU</del><br><del>wget <a class="link"   href="http://dl.qaq.fun/brevent.sh" >http://dl.qaq.fun/brevent.sh<i class="fas fa-external-link-alt"></i></a></del><br><del>chmod +x brevent.sh &amp;&amp; ./brevent.sh</del></p>
+<blockquote>
+<p>如果给另一台手机开启黑阈，最好删除/sdcard/.Android目录或者重启后再执行 </p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mkdir -p /sdcard/.android /sdcard/.android/tmp</span><br><span class="line">cd /sdcard/.android</span><br><span class="line">adb keygen adbkey &amp;&gt; /dev/null</span><br><span class="line">export HOME=/sdcard</span><br><span class="line">export TMPDIR=/sdcard/.android/tmp</span><br><span class="line">adb kill-server</span><br><span class="line">adb devices</span><br><span class="line">adb -d wait-for-device</span><br><span class="line">adb -d shell sh /data/data/me.piebridge.brevent/brevent.sh</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>OTG</tag>
+        <tag>Brevent</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>CloudFlare Spectrum SSH转发加速</title>
+    <url>/archives/cloudflare-spectrum/</url>
+    <content><![CDATA[<p>为你的被阻断/IPv6小鸡设置SSH中转转发加速</p>
+<a id="more"></a>
+<p>原来<del>白嫖</del>使用的是UCloud的GlobalSSH服务，<del>但于 <code>2020.05.19</code> 后暂时只能添加UCloud的IP地址，</del>然后想到CloudFlare最近推出的这个Spectrum服务。</p>
+<blockquote>
+<p>Spectrum: security and acceleration for any TCP or UDP based application. That means you can route MQTT, email, file transfer, version control, games, anything over TCP or UDP through Cloudflare to mask the origin and protect it from DDoS.<br><a class="link"   href="https://developers.cloudflare.com/spectrum" >https://developers.cloudflare.com/spectrum<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<p>“SPECTRUM — 比常规的CloudFlare多了65,533个端口，为所有应用提供 DDoS保护！”</p>
+<p>服务器SSH又双叒叕断连辣？服务器被墙辣？买的NAT发现只有IPv6却不能裸连？<br>通过全协议全端口的中转加速服务，均能有效解决以上问题。</p>
+<p>温馨提示：<br>Pro 和 Business套餐(包括Plesk CloudFlare插件)只支持SSH 、Minecraft协议(<strong>只能中转22/25565端口</strong>)，且每月只有5G免费流量。<br>Enterprise套餐支持所有TCP/UDP协议，每月有10G免费流量。<br>至于流量费嘛，1$/G（</p>
+<blockquote>
+<p>Spectrum is available on all paid plans. Pro and Business support selected protocols only, whereas Enterprise supports all TCP and UDP based traffic.</p>
+</blockquote>
+<p>以及中国大陆不可抗拒的速度方面，出口IP采用Anycast技术，但不包括中国.jpg<br>所以和CF的线路差不多，电信联通走美西/欧洲，移动HKIX香港/李家坡。</p>
+<blockquote>
+<p>These addresses are Anycasted from all Cloudflare data centers, <strong>with the exception of data centers in China</strong>.</p>
+</blockquote>
+<hr>
+<h1 id="食用步骤"><a href="#食用步骤" class="headerlink" title="食用步骤"></a>食用步骤</h1><h2 id="添加转发"><a href="#添加转发" class="headerlink" title="添加转发"></a>添加转发</h2><p><a class="link"   href="https://dash.cloudflare.com/" >登录CloudFlare<i class="fas fa-external-link-alt"></i></a>后，在域名控制台中依次 Spectrum - 创建应用程序 - SSH</p>
+<p>其中应用程序域为子域名，按自己要求自行发挥，这里以 <code>ssh.pearik.com</code> 为例。<br>IP地址为你的服务器地址，可以输入IPv4/IPv6。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/85885762-9a51-42c3-bf21-76727e18d174"
+                     
+                ><br>保存后按你的CloudFlare域名接入方式连接。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/41435264-fb70-466a-9f91-3daf7068ef72"
+                     
+                ></p>
+<h2 id="NS接入"><a href="#NS接入" class="headerlink" title="NS接入"></a>NS接入</h2><p>直接SSH连接到域 <code>ssh.pearik.com</code> ，即可食用。</p>
+<h2 id="CloudFlare-Partner-CNAME接入"><a href="#CloudFlare-Partner-CNAME接入" class="headerlink" title="CloudFlare Partner CNAME接入"></a>CloudFlare Partner CNAME接入</h2><p>在你的DNS解析中 <code>添加CNAME记录</code>：<code>域.cdn.cloudflare.net</code> 如 <code>ssh.pearik.com.cdn.cloudflare.net</code> 后，SSH连接到域 <code>ssh.pearik.com</code> ，即可食用。</p>
+<h1 id="其他注意事项"><a href="#其他注意事项" class="headerlink" title="其他注意事项"></a>其他注意事项</h1><p>分配的IP为独享Anycast IP，所以不要去想用自选IP的方法去解析1.0.0.1/1.1.1.1了（</p>
+<p>同一个域名只允许一种转发类型，加钱我不知道。</p>
+<p>可以利用白嫖的Plesk CloudFlare插件来白嫖此功能。</p>
+<p>这个玩意还有更多骚操作，但请合理利用资源，不要逾越他本身的用途（参考UCloud），且存在流量限制，也就日常用用当做SSH转发了。</p>
+<p>安全方面，这种端口全转发的公网中转，暂且不知道有无隐患。</p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>ssh</tag>
+        <tag>CloudFlare</tag>
+        <tag>CloudFlare Spectrum</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>CloudFlare Speed选项优化</title>
+    <url>/archives/cloudflare-speed-options/</url>
+    <content><![CDATA[<p>优化CloudFlare Rocket Loader与Browser Insights，加快网站加载速度（误）。</p>
+<a id="more"></a>
+<h1 id="Rocket-Loader"><a href="#Rocket-Loader" class="headerlink" title="Rocket Loader"></a>Rocket Loader</h1><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>什么是 Rocket Loader？</p>
+<blockquote>
+<p>Rocket Loader 会将您所有 JavaScript 的加载一直推迟到渲染之后再进行，从而优先处理您网站的内容（文本、图像、字体等）。在使用 JavaScript 的页面上，这可使您的用户获得更快加载的体验，并且可改善以下性能指标：<br>首次渲染时间 (TTFP)<br>首次内容渲染时间 (TTFCP)<br>首次有效渲染时间 (TTFMP)<br>文件加载<br><a class="link"   href="https://support.cloudflare.com/hc/en-us/articles/200168056-What-does-Rocket-Loader-do" >https://support.cloudflare.com/hc/en-us/articles/200168056-What-does-Rocket-Loader-do<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<p>简单来说，就是延迟加载js。在页面加载时暂时注释js，先在页面中呈现其他资源（如CSS，图像等）。等到加载完成后，再去把js动态插回页面中，后浏览器加载完整页面。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/eef52c3f-7cc9-4eb7-9573-0b719cebfa5c"
+                      alt="Rocket Loader 开启前"
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/c1cb6d81-ae36-4e21-9dc0-1b2aa738d422"
+                      alt="Rocket Loader 开启后"
+                ></p>
+<p>听上去功能不错，能有效优化网站的加载速度。但实际上，在国内，首次加载这个12k的JS文件都够你怀疑人生一辈子了，更别说可能会导致某些JS无法正常运行，如Google Adsense等。</p>
+<p>值得一提的是，百度云加速同样有此功能（JavaScript快速加载），得于国内百度云加速速度还算满意（总比CloudFlare强），这个功能还是值得开启的。<br>附·开启方法：<del>1.氪金</del> 2.自定义规则</p>
+<h2 id="优化方案"><a href="#优化方案" class="headerlink" title="优化方案"></a>优化方案</h2><p>如果想让Rocket Loader不优化特定脚本，通过添加 <code>data-cfasync=“false”</code> 属性到相关js标签，即可让Rocket Loader忽略此js。</p>
+<script data-cfasync="false" src="/javascript.js"></script>
+<blockquote>
+<p>其中 <code>&#39;data-cfasync&#39;</code> 属性必须添加在 <code>&#39;src&#39;</code> 属性之前。 </p>
+</blockquote>
+<p>或者简单粗暴，直接关闭 <code>Rocket Loader</code></p>
+<h1 id="Browser-Insights"><a href="#Browser-Insights" class="headerlink" title="Browser Insights"></a>Browser Insights</h1><h2 id="介绍-1"><a href="#介绍-1" class="headerlink" title="介绍"></a>介绍</h2><blockquote>
+<p>使用 Browser Insights 测量您的网站的性能和用户的加载时间。<br><a class="link"   href="https://support.cloudflare.com/hc/en-us/articles/360033929991-Cloudflare-Browser-Insights" >https://support.cloudflare.com/hc/en-us/articles/360033929991-Cloudflare-Browser-Insights<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<p>测量您的网站的性能和用户的加载时间，对于国内用户就是个没啥卵用的功能。加载这个功能的JS比打开CloudFlare官网还慢。</p>
+<h2 id="优化方案-1"><a href="#优化方案-1" class="headerlink" title="优化方案"></a>优化方案</h2><p>不多BB，直接关闭</p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>CloudFlare</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Debian 10(Buster)安装OpenJDK 8</title>
+    <url>/archives/debian10-openjdk/</url>
+    <content><![CDATA[<p>在Debian 10(Buster)安装openjdk-8-jdk/openjdk-8-jre</p>
+<a id="more"></a>
+<p>由于安全问题，Debian在Buster版本已不再支持直接通过 <code>apt-get</code> 安装 <code>openjdk-8-jdk</code> 以及 <code>openjdk-8-jre</code> 。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">Package openjdk-8-jdk-headless is not available, but is referred to by another package.</span><br><span class="line">This may mean that the package is missing, has been obsoleted, or</span><br><span class="line">is only available from another <span class="built_in">source</span></span><br><span class="line"></span><br><span class="line">E: Package <span class="string">&#x27;openjdk-8-jdk-headless&#x27;</span> has no installation candidate</span><br></pre></td></tr></table></figure>
+<p>这里通过2种方式来安装OpenJDK JDK/JRE 8。</p>
+<h1 id="SID源安装"><a href="#SID源安装" class="headerlink" title="SID源安装"></a>SID源安装</h1><p>以安装 <code>openjdk-8-jdk</code> 为例</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&quot;deb http://deb.debian.org/debian/ sid main&quot;</span> &gt;&gt; /etc/apt/sources.list</span><br><span class="line"></span><br><span class="line">apt-get update &amp;&amp; apt-get install -y openjdk-8-jdk</span><br></pre></td></tr></table></figure>
+<p>此方法简单粗暴，但会引用不稳定的deb安装包，请谨慎使用。</p>
+<blockquote>
+<p>或安装完jdk/jre后直接删除sid源（卸磨杀驴.jpg）</p>
+</blockquote>
+<h1 id="AdoptOpenJDK安装"><a href="#AdoptOpenJDK安装" class="headerlink" title="AdoptOpenJDK安装"></a>AdoptOpenJDK安装</h1><p>这里同样也采用deb包安装</p>
+<h2 id="安装所需依赖"><a href="#安装所需依赖" class="headerlink" title="安装所需依赖"></a>安装所需依赖</h2><p><code>apt-get update &amp;&amp; apt-get install -y apt-transport-https software-properties-common ca-certificates lsb-release wget dirmngr gnupg</code></p>
+<h2 id="添加-AdoptOpenJDK-GPG"><a href="#添加-AdoptOpenJDK-GPG" class="headerlink" title="添加 AdoptOpenJDK GPG"></a>添加 AdoptOpenJDK GPG</h2><p><code>wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -</code></p>
+<h2 id="添加-AdoptOpenJDK-官方仓库"><a href="#添加-AdoptOpenJDK-官方仓库" class="headerlink" title="添加 AdoptOpenJDK 官方仓库"></a>添加 AdoptOpenJDK 官方仓库</h2><p><code>add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/</code></p>
+<blockquote>
+<p>若出现<code>-bash: add-apt-repository: command not found</code> 请检查是否成功安装所需依赖。</p>
+</blockquote>
+<h2 id="安装所需包"><a href="#安装所需包" class="headerlink" title="安装所需包"></a>安装所需包</h2><p>执行 <code>apt-get update</code> 后</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#安装OpenJDK 8 JDK</span></span><br><span class="line">apt-get install adoptopenjdk-8-hotspot</span><br><span class="line"></span><br><span class="line"><span class="comment">#安装OpenJDK 8 JRE</span></span><br><span class="line">apt-get install adoptopenjdk-8-hotspot-jre</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>官方教程<br><a class="link"   href="https://adoptopenjdk.net/installation.html?variant=openjdk8&amp;jvmVariant=hotspot#linux-pkg" >https://adoptopenjdk.net/installation.html?variant=openjdk8&amp;jvmVariant=hotspot#linux-pkg<i class="fas fa-external-link-alt"></i></a><br>参考自<br><a class="link"   href="https://stackoverflow.com/questions/57031649/how-to-install-openjdk-8-jdk-on-debian-10-buster" >https://stackoverflow.com/questions/57031649/how-to-install-openjdk-8-jdk-on-debian-10-buster<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>OpenJDK</tag>
+        <tag>Debian 10</tag>
+        <tag>JRE</tag>
+        <tag>JDK</tag>
+        <tag>AdoptOpenJDK</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Coding文件网盘实现图床与文件直链下载</title>
+    <url>/archives/coding-netdisk/</url>
+    <content><![CDATA[<p>Coding团队版无限空间文件网盘，实现文件高速直链下载与图床程序。</p>
+<a id="more"></a>
+<p>这篇文章咕了快有3个月了。起因还是某位傻逼网友 <a href="https://ronnie.top/"><code>@Ronnie</code></a> 在用Coding搭博客时发现的新功能，然后就折腾出了这个玩法<br>本文达成成就：Coding运营上门（Doge）</p>
+<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>腾讯云开发者平台(Tencent Dev)改版成Coding团队版后，在每个仓库都自带了文件网盘功能。以下是官方介绍：</p>
+<blockquote>
+<p>文件网盘是一个可协作对网盘，用于存储项目内各式各样的文件资料，兼容上传所有的文件格式，助力团队内的高效协作。不仅如此，CODING 文件网盘还支持对文件历史版本的记录与回溯，方便团队对项目资料整体进行版本管理与质量把控。除此，在网盘内还能够预览部分格式的文件，高效定位高频文档。<br><a class="link"   href="https://help.coding.net/docs/management/files.html" >帮助中心<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<p>简单来说就是： 支持上传文件大小不超过 <code>300 M</code>（反正我测试超过250M传不了.jpg），支持文件公开分享链接并可设置密码（不超过100M），支持文件历史版本记录与回溯。</p>
+<p>合理利用的话，理论上就是个<del>无限存储高速网盘。</del>（本人电信200M实测跑满宽带）</p>
+<p>根据评论区反馈，单仓库大小现已限制30G且文件外链分享限制100M以下。</p>
+<h1 id="上传"><a href="#上传" class="headerlink" title="上传"></a>上传</h1><h2 id="创建项目"><a href="#创建项目" class="headerlink" title="创建项目"></a>创建项目</h2><p>首先需要一个Coding团队版账号（<br>在Coding中新建一个项目，模板，项目名称随意。</p>
+<h2 id="开启功能"><a href="#开启功能" class="headerlink" title="开启功能"></a>开启功能</h2><p>理论上项目默认是不开启文件网盘功能的。<br>在你创建的项目中依次打开【项目设置】-&gt;【项目与成员】-&gt;【功能开关】-&gt;【文件网盘】<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/90624828-c66a-46fa-9e34-e63b1fe9782b"
+                     
+                ></p>
+<blockquote>
+<p>需要注意的是，团队成员是否有调整与使用该功能的权限。</p>
+</blockquote>
+<h2 id="上传文件"><a href="#上传文件" class="headerlink" title="上传文件"></a>上传文件</h2><p>在项目的左栏依次打开【文档管理】-&gt;【文件网盘】-&gt;【全部文件】后，点击上传文件或者直接拖拽文件即可上传文件。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/22061be4-0915-485d-974b-5ebc9b84af72"
+                     
+                ></p>
+<h2 id="分享文件"><a href="#分享文件" class="headerlink" title="分享文件"></a>分享文件</h2><p>在你上传的文件点击分享按钮并开启分享。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/cf3fd604-6942-4d26-92f7-47769871bc6e"
+                     
+                ><br>开启后会得到一个公开链接以及访问密码。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/97b2e189-8160-4aa7-9026-b518dae968c9"
+                     
+                ></p>
+<h1 id="直链获取"><a href="#直链获取" class="headerlink" title="直链获取"></a>直链获取</h1><p>这里说下链接的组成结构。<br>如上图所示，文件分享后都得到一个随机的文件ID，形成的文件ID在对文件的每一次修改（文件标题或文件内容的修改）都不会失效。以下是链接组成成分：</p>
+<h2 id="文件直链"><a href="#文件直链" class="headerlink" title="文件直链"></a>文件直链</h2><p>文件预览地址为<br><code>https://团队ID.coding.net/s/文件ID</code><br>而下载直链则为<br><code>https://团队ID.coding.net/api/share/download/文件ID</code><br>直接引用下载直链即可享受高速下载，且无其他限制。</p>
+<blockquote>
+<p>示例（Android微信）<br>预览：<a href="https://anak.coding.net/s/971f1c6c-4d32-483d-a5a0-422b5ca8862c"><code>https://anak.coding.net/s/971f1c6c-4d32-483d-a5a0-422b5ca8862c</code></a><br>直链链接：<a href="https://anak.coding.net/api/share/download/971f1c6c-4d32-483d-a5a0-422b5ca8862c"><code>https://anak.coding.net/api/share/download/971f1c6c-4d32-483d-a5a0-422b5ca8862c</code></a></p>
+</blockquote>
+<h2 id="图片直链"><a href="#图片直链" class="headerlink" title="图片直链"></a>图片直链</h2><p>图片分享的预览地址与文件一致，都为<br><code>https://团队ID.coding.net/s/文件ID</code><br>而图片直链则为<br><code>https://团队ID.coding.net/api/share/image/文件ID</code><br>点击会跳转到 <code>coding-net-production-file-ci.codehub.cn</code> 开头的域名，即为图片文件CDN地址。</p>
+<blockquote>
+<p>示例（图片）<br>预览：<a href="https://anak.coding.net/s/329bd27a-5ef4-4fce-89f1-a139c926dcfd"><code>https://anak.coding.net/s/329bd27a-5ef4-4fce-89f1-a139c926dcfd</code></a><br>直链API：<a href="https://anak.coding.net/api/share/image/329bd27a-5ef4-4fce-89f1-a139c926dcfd"><code>https://anak.coding.net/api/share/image/329bd27a-5ef4-4fce-89f1-a139c926dcfd</code></a></p>
+</blockquote>
+<h2 id="速度"><a href="#速度" class="headerlink" title="速度"></a>速度</h2><p>文件直链/图片预览的API均为上海腾讯云，在全国速度不错。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/b6dce465-6882-4722-851e-b4a050a4e631"
+                      alt="仅供参考"
+                ></p>
+<p>图片直链则使用全国腾讯云CDN加速。国内速度极佳。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/ed314971-a6cf-4e8f-99f5-8cd4036732c8"
+                      alt="仅供参考"
+                ></p>
+<h1 id="后续"><a href="#后续" class="headerlink" title="后续"></a>后续</h1><p>虽然我感觉最近Coding的操作挺纳闷的，但功能方面是真香.jpg<br>我也询问过Coding客服，目前他们打算放出文件网盘API Wiki，有能力的大佬也可以自行写一个上传分享接口程序（在写了 0%）。</p>
+<p>最后</p>
+<ul>
+<li>请勿上传法律禁止文件</li>
+<li>请勿存放重要文件</li>
+<li>请合理使用该服务</li>
+</ul>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>Coding</tag>
+        <tag>网盘</tag>
+        <tag>图床</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>免费静态托管服务</title>
+    <url>/archives/free-pages/</url>
+    <content><![CDATA[<p>记录下大厂免费额度的静态网站托管服务</p>
+<a id="more"></a>
+<blockquote>
+<p>白嫖他不香吗</p>
+</blockquote>
+<h1 id="GitHub"><a href="#GitHub" class="headerlink" title="GitHub"></a>GitHub</h1><ul>
+<li>可自定义域名</li>
+<li>支持HTTPS，一键SSL配置</li>
+<li>Fastly Anycast节点</li>
+<li>国内访问速度慢</li>
+<li>电信联通走日本NTT，移动走圣何塞</li>
+<li>推荐程度 ★★★★</li>
+</ul>
+<p>作为最常用的<del>同性交流</del>代码托管平台，GitHub Pages是大多用户的第一选择。除去国内同非SVIP的百度云一样的速度之外，部署简单，上手难度低也是他的一大优点。</p>
+<blockquote>
+<p>注：GitHub屏蔽百度爬虫。</p>
+</blockquote>
+<h1 id="GitLab"><a href="#GitLab" class="headerlink" title="GitLab"></a>GitLab</h1><ul>
+<li>可自定义域名，自定义证书</li>
+<li>支持HTTPS，一键SSL配置</li>
+<li>GitLab-CI集成</li>
+<li>Fastly Anycast节点</li>
+<li>国内访问速度与GitHub相似</li>
+<li>推荐程度 ★★★★</li>
+</ul>
+<p>与GitHub功能上差不多，自带的GitLab-Ci持续部署能有效地提高效率。</p>
+<h1 id="Netlify"><a href="#Netlify" class="headerlink" title="Netlify"></a>Netlify</h1><ul>
+<li>可自定义域名</li>
+<li>支持HTTPS HTTP/2 IPv6</li>
+<li>自定义页面重定向，静态资源优化</li>
+<li>DigitalOcean 美国纽约&amp;新加坡节点</li>
+<li>推荐程度 ★★★★★</li>
+</ul>
+<p>Netlify提供的服务应该算是最多的。自定义插入代码、打包和压缩js/css、压缩，处理图片、自动部署、提供Webhooks与API等功能。</p>
+<h1 id="Vercel-ZEIT"><a href="#Vercel-ZEIT" class="headerlink" title="Vercel(ZEIT)"></a>Vercel(ZEIT)</h1><ul>
+<li>可自定义域名，自定义证书（付费）</li>
+<li>支持HTTPS</li>
+<li>提供ServerLess服务</li>
+<li>GCP&amp;AWS节点</li>
+<li>亚洲有香港和台湾节点，移动绕美国</li>
+<li>推荐程度 ★★★★★</li>
+</ul>
+<p>大陆速度不错，可使用 now.sh CLI或GitHub，GitLab，Bitbucket导入项目进行自动代码部署，提供ServerLess，分配的*.now.sh域名很好康，<del>就是免费流量才20G.</del> 好像无限流量了.<br><code>2020.4.22</code> 后改名为Vercel（收购.jpg）<br>~~线路解析推荐</p>
+<blockquote>
+<p>电信香港线路IP：35.241.110.125（联通绕美）<br>电信联通台湾线路IP：104.199.217.228（部分地区电信可能会出现绕美）<br>移动AWS日本/香港线路IP：18.178.194.147/18.162.37.140<br>~~<br>目前默认CNAME节点采用Anycast技术（IP：76.76.21.21），且于2020.11.19日停止使用旧IP地址。<br>电信飞AWS香港，移动日本/新家坡/香港，联通脸黑走tata跑新加坡到印度了。。。</p>
+</blockquote>
+<h1 id="Google-FireBase"><a href="#Google-FireBase" class="headerlink" title="Google FireBase"></a>Google FireBase</h1><ul>
+<li>可自定义域名</li>
+<li>支持HTTPS</li>
+<li>只能通过 CLI 上传代码</li>
+<li>Fastly Anycast节点</li>
+<li>国内访问速度与GitHub相似</li>
+<li>推荐程度 ★★★</li>
+</ul>
+<p>Google Analytics等谷歌服务集成，实时数据库，实验室优化。部署方式只能用官方的CLI，说是免费，但免费额度的流量少且有其他限制，一不小心房子就没了（</p>
+<h1 id="Heroku"><a href="#Heroku" class="headerlink" title="Heroku"></a>Heroku</h1><ul>
+<li>可自定义域名（须绑卡验证）</li>
+<li>支持HTTPS</li>
+<li>AWS 美国节点</li>
+<li>大陆登录页面被墙（由于滥用代理严重）</li>
+<li>推荐程度 ★★</li>
+</ul>
+<p>大陆访问速度较慢，静态托管上中规中矩，其实功能可不止托管静态那么简单（</p>
+<h1 id="Coding"><a href="#Coding" class="headerlink" title="Coding"></a>Coding</h1><ul>
+<li>可自定义域名</li>
+<li>支持HTTPS</li>
+<li>全球腾讯云新加坡CN2/香港CN2</li>
+<li>推荐程度 ★★★★</li>
+</ul>
+<p>SLA低，曾多次宕机。被腾讯收购后中规中矩，Coding个人版于2020年1月20日开始转移到团队版（吐槽下操作太憨批了）</p>
+<p><del>线路不错，</del>迁移到团队版后服务器由腾讯云香港CN2切至腾讯云新加坡CN2（不知道会不会切回来）。<br>注意的是，移动可能会无法访问（辣鸡移动）</p>
+<blockquote>
+<p>这里给一个香港ip：119.28.218.218</p>
+</blockquote>
+<h1 id="Gitee"><a href="#Gitee" class="headerlink" title="Gitee"></a>Gitee</h1><ul>
+<li>支持HTTPS</li>
+<li>上海腾讯云节点</li>
+<li>推荐程度 ★★</li>
+</ul>
+<p>自定义域名需要付费套餐（且域名需要备案）</p>
+<blockquote>
+<p><del>我备案了还会用这玩意？</del></p>
+</blockquote>
+<h1 id="Tencent-SCF"><a href="#Tencent-SCF" class="headerlink" title="Tencent SCF"></a><del>Tencent SCF</del></h1><ul>
+<li>2019年12月4号后对外流量开始计费。</li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>功能方面，<a href="#Netlify">Netlify</a>是上面所有中功能最全的。 </p>
+<p>速度方面，推荐<a href="#Coding">Coding</a>+<a href="#ZEIT">ZEIT</a>+<a href="#GitHub">GitHub</a>&amp;<a class="link"   href="https://jsdelivr.com/" >jsDelivr<i class="fas fa-external-link-alt"></i></a>静态资源的方式。</p>
+<p>线路方面，电信采用<a href="#Coding">Coding</a>&amp;<a href="#Vercel(ZEIT)">Vercel</a>（注意防止踩雷GCP线路问题），联通采用<a href="#Vercel(ZEIT)">Vercel</a>，移动亦可<a href="#Netlify">Netlify</a>，<a class="link"   href="https://cloudflare.com/" >CloudFlare<i class="fas fa-external-link-alt"></i></a>或<a href="#Coding">Coding（不太推荐）</a>。</p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>静态</tag>
+        <tag>托管</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Typecho转Hexo折腾过程</title>
+    <url>/archives/hello-hexo/</url>
+    <content><![CDATA[<p>搬迁到Hexo时所遇到的坑（</p>
+<a id="more"></a>
+<h1 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h1><p>迫于Typecho咕咕咕，加上原来Typecho的主题就是由Hexo移植过来的，才有了换静态博客Hexo的想法</p>
+<blockquote>
+<p>主要还是没钱续费服务器了（</p>
+</blockquote>
+<h1 id="搭建步骤"><a href="#搭建步骤" class="headerlink" title="搭建步骤"></a>搭建步骤</h1><h2 id="安装Nodejs"><a href="#安装Nodejs" class="headerlink" title="安装Nodejs"></a>安装Nodejs</h2><p>可以参考我另一篇文章 <a href="/archives/nodejs">Linux中Nodejs环境的安装</a></p>
+<h2 id="Hexo安装"><a href="#Hexo安装" class="headerlink" title="Hexo安装"></a>Hexo安装</h2><p><a class="link"   href="https://hexo.io/docs/" >官方文档<i class="fas fa-external-link-alt"></i></a>，请（</p>
+<h2 id="主题"><a href="#主题" class="headerlink" title="主题"></a>主题</h2><p>这里选用的是<a class="link"   href="https://volantis.js.org/" >Volantis（Material X）主题<i class="fas fa-external-link-alt"></i></a>，有想法的看官方文档（</p>
+<blockquote>
+<p>2020/02/01 Updated<br>换成<a class="link"   href="https://github.com/ppoffice/hexo-theme-icarus" >icarus<i class="fas fa-external-link-alt"></i></a>了,并魔改了一番（<a href="#icarus%E4%B8%BB%E9%A2%98%E8%AE%BE%E7%BD%AE">魔改内容</a></p>
+</blockquote>
+<h1 id="搭建时所挖的坑"><a href="#搭建时所挖的坑" class="headerlink" title="搭建时所挖的坑"></a>搭建时所挖的坑</h1><h2 id="文章永久链接"><a href="#文章永久链接" class="headerlink" title="文章永久链接"></a>文章永久链接</h2><p>博客用Typecho的时候，链接采用的是  <a class="link"   href="http://xxx.com/archives/xxx.html" >http://xxx.com/archives/xxx.html<i class="fas fa-external-link-alt"></i></a> 的WordPress形式。如果放弃原有的方式的话，就要考虑网站收录的问题。在Hexo中你要设置成WordPress形式的话，只需修改_config.yml中的<code>permalink</code>参数为</p>
+<p><code>permalink: /archives/:title.html</code></p>
+<p>更多修改方式可参考<a class="link"   href="https://hexo.io/docs/permalinks" >官方文档<i class="fas fa-external-link-alt"></i></a></p>
+<h2 id="评论"><a href="#评论" class="headerlink" title="评论"></a>评论</h2><p>Typecho原来采用的是Disqus评论系统。迫于天朝风评迫害，才考虑转为Valine。</p>
+<p>本主题可以快捷从Disqus,Gitalk,Valine,Livere共4者中选择一个中意的评论系统</p>
+<h2 id="icarus主题设置"><a href="#icarus主题设置" class="headerlink" title="icarus主题设置"></a>icarus主题设置</h2><h3 id="CSS"><a href="#CSS" class="headerlink" title="CSS"></a>CSS</h3><p>背景图采用 <a class="link"   href="https://api.btstu.cn/doc/sjbz.php" >博天api<i class="fas fa-external-link-alt"></i></a>，由 <a class="link"   href="https://imaegoo.com/" >imaegoo<i class="fas fa-external-link-alt"></i></a>, <a class="link"   href="https://removeif.github.io/" >removeif<i class="fas fa-external-link-alt"></i></a> 大佬博客整体魔改而来（</p>
+<p>整体上没啥区别，就字体，布局，icon，cdn和seo上的小优化。源码在GitHub可自行查看修改内容。</p>
+<p>好像没啥要说的了，有啥问题可以来问（大概也不会）-(</p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>Typecho</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hello World</title>
+    <url>/archives/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a class="link"   href="https://hexo.io/" >Hexo<i class="fas fa-external-link-alt"></i></a>! </p>
+<a id="more"></a>
+<p>This is your very first post. Check <a class="link"   href="https://hexo.io/docs/" >documentation<i class="fas fa-external-link-alt"></i></a> for more info. If you get any problems when using Hexo, you can find the answer in <a class="link"   href="https://hexo.io/docs/troubleshooting.html" >troubleshooting<i class="fas fa-external-link-alt"></i></a> or you can ask me on <a class="link"   href="https://github.com/hexojs/hexo/issues" >GitHub<i class="fas fa-external-link-alt"></i></a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a class="link"   href="https://hexo.io/docs/writing.html" >Writing<i class="fas fa-external-link-alt"></i></a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>More info: <a class="link"   href="https://hexo.io/docs/server.html" >Server<i class="fas fa-external-link-alt"></i></a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>More info: <a class="link"   href="https://hexo.io/docs/generating.html" >Generating<i class="fas fa-external-link-alt"></i></a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<p>More info: <a class="link"   href="https://hexo.io/docs/deployment.html" >Deployment<i class="fas fa-external-link-alt"></i></a></p>
+]]></content>
+  </entry>
+  <entry>
+    <title>GitHub+ZEIT+Coding持续集成部署Hexo</title>
+    <url>/archives/hexo-ci/</url>
+    <content><![CDATA[<p>GitHub托管+ZEIT集成部署+Coding页面分发Hexo</p>
+<a id="more"></a>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/3c85a2d1-2642-4103-9ae6-b7b4f5e564af"
+                     
+                ><br>这里说下采用这种方法的原因。<br><br><br>原来想采用Travis CI集成部署的，但发现ZEIT的线路不错，且又想和Coding Pages一起用，所以只通过ZEIT集成部署再推送至Coding，DNS分运营商解析实现<del>速度更快</del>。(说白了就是白折腾)</p>
+<blockquote>
+<p>其实是可以通过Travis CI持续集成直接一键推送Page到ZEIT和Coding的。（</p>
+</blockquote>
+<h2 id="添加Token"><a href="#添加Token" class="headerlink" title="添加Token"></a>添加Token</h2><p>首先去Coding添加Token</p>
+<ol>
+<li>Coding右上角头像 - 个人设置<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/749983be-a273-4e7e-995e-60a0ad6fae1d"
+                     
+                ><br></li>
+<li>访问令牌 - 新建令牌<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/1391b0f4-4e7b-41a4-ad10-4f725dab3c2d"
+                     
+                ><br></li>
+<li>令牌描述（随意）以及仓库控制权限<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/911a09d1-ca19-4db2-a449-b98eb1da77d6"
+                     
+                ><br></li>
+<li>记住生成的Token和自己的Token用户名，其中Token只显示一次，以后只能重置Token。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/ad3161be-79d1-4e14-82ee-04723d1c7dfc"
+                     
+                ></li>
+</ol>
+<h2 id="安装Now-CLI"><a href="#安装Now-CLI" class="headerlink" title="安装Now CLI"></a>安装Now CLI</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm i -g now</span><br><span class="line">now login</span><br><span class="line">now secrets add secret-name secret-value</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>其中的secret-name为你的密钥名称（需要记住，可重命名），secret-value为上面所创建的Token</p>
+<p><a class="link"   href="https://zeit.co/docs/v2/serverless-functions/env-and-secrets?query=env#adding-secrets" >https://zeit.co/docs/v2/serverless-functions/env-and-secrets?query=env#adding-secrets<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<h2 id="添加now-js"><a href="#添加now-js" class="headerlink" title="添加now.js"></a>添加now.js</h2><p>在根目录创建now.js</p>
+<figure class="highlight js"><figcaption><span>now.js</span></figcaption><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="string">&quot;version&quot;</span>: <span class="number">2</span>,</span><br><span class="line">	<span class="string">&quot;alias&quot;</span>: [<span class="string">&quot;www.pearik.com&quot;</span>, <span class="string">&quot;wsl.now.sh&quot;</span>, <span class="string">&quot;pearik.com&quot;</span>], <span class="comment">//添加你的自定义网址，或者在ZEIT - Domains中添加。</span></span><br><span class="line">	<span class="string">&quot;build&quot;</span>: &#123;</span><br><span class="line">		<span class="string">&quot;env&quot;</span>: &#123;</span><br><span class="line">		  <span class="string">&quot;CODING_TOKEN&quot;</span>: <span class="string">&quot;@secret-name&quot;</span> <span class="comment">//secret-name填写自己上面设置的的名称。</span></span><br><span class="line">			   &#125;</span><br><span class="line">	&#125;,</span><br><span class="line">	<span class="string">&quot;routes&quot;</span>: [</span><br><span class="line">	  &#123; <span class="string">&quot;handle&quot;</span>: <span class="string">&quot;filesystem&quot;</span> &#125;,</span><br><span class="line">	  &#123; <span class="string">&quot;src&quot;</span>: <span class="string">&quot;/(.*)&quot;</span>, <span class="string">&quot;status&quot;</span>: <span class="number">404</span>, <span class="string">&quot;dest&quot;</span>: <span class="string">&quot;/404.html&quot;</span> &#125; <span class="comment">//开启404自定义页面跳转</span></span><br><span class="line">			  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="安装Shelljs"><a href="#安装Shelljs" class="headerlink" title="安装Shelljs"></a>安装Shelljs</h2><p><code>npm i shelljs --save</code></p>
+<h2 id="添加Coding-Pull-js"><a href="#添加Coding-Pull-js" class="headerlink" title="添加Coding Pull js"></a>添加Coding Pull js</h2><p>以我的个人设置为例，在根目录创建coding.js<br>请按照注释自行修改相关配置。</p>
+<figure class="highlight js"><figcaption><span>coding.js</span></figcaption><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> shell = <span class="built_in">require</span>(<span class="string">&#x27;shelljs&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> env = process.env.CODING_TOKEN;</span><br><span class="line"></span><br><span class="line"><span class="comment">//执行npm run build 命令</span></span><br><span class="line"><span class="keyword">if</span> (shell.exec(<span class="string">&#x27;npm run build&#x27;</span>).code !== <span class="number">0</span>) &#123;</span><br><span class="line">  shell.echo(<span class="string">&#x27;Error: Git commit failed&#x27;</span>);</span><br><span class="line">  shell.exit(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">shell.cd(<span class="string">&#x27;public&#x27;</span>);</span><br><span class="line">shell.exec(<span class="string">&#x27;git init&#x27;</span>);</span><br><span class="line">shell.exec(<span class="string">&quot;git config --global user.name &#x27;admin@pearik.com&#x27;&quot;</span>); <span class="comment">//Coding用户名（其实就是邮箱.jpg）</span></span><br><span class="line">shell.exec(<span class="string">&quot;git config --global user.email &#x27;admin@pearik.com&#x27;&quot;</span>); <span class="comment">//Coding邮箱</span></span><br><span class="line">shell.exec(<span class="string">&#x27;git add .&#x27;</span>);</span><br><span class="line">shell.exec(<span class="string">&quot;git commit -m &#x27;ZEIT CLI Auto Build&#x27;&quot;</span>); <span class="comment">//git commit 可随意</span></span><br><span class="line">shell.exec(<span class="string">&quot;git remote add origin https://CODING_TOKENNAME:$CODING_TOKEN@CODING_REPO&quot;</span>);</span><br><span class="line">shell.exec(<span class="string">&quot;git push --force --quiet https://CODING_TOKENNAME:$CODING_TOKEN@CODING_REPO&quot;</span>)</span><br><span class="line"><span class="comment">//CODING_TOKENNAME替换成你的Coding Token用户名，CODING_REPO替换成你的仓库地址。</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如果远程主机的版本比本地版本更新，推送时Git会报错，要求先在本地做git pull合并差异，然后再推送到远程主机。这时，如果你一定要推送，可以使用–force选项。</p>
+</blockquote>
+<h2 id="添加Node-Scripts"><a href="#添加Node-Scripts" class="headerlink" title="添加Node Scripts"></a>添加Node Scripts</h2><p>修改根目录的package.json</p>
+<figure class="highlight js"><figcaption><span>package.json</span></figcaption><table><tr><td class="code"><pre><span class="line"><span class="string">&quot;scripts&quot;</span>: &#123;</span><br><span class="line">  <span class="string">&quot;build&quot;</span>: <span class="string">&quot;hexo clean &amp;&amp; hexo g&quot;</span>,</span><br><span class="line">  <span class="string">&quot;deploy&quot;</span>: <span class="string">&quot;node ./coding.js&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Push源码到GitHub"><a href="#Push源码到GitHub" class="headerlink" title="Push源码到GitHub"></a>Push源码到GitHub</h2><p>把hexo源码Push到GitHub仓库</p>
+<blockquote>
+<p>记得<code>.gitignore</code>配置中添加<code>node_modules</code>（逃）</p>
+</blockquote>
+<h2 id="ZEIT导入"><a href="#ZEIT导入" class="headerlink" title="ZEIT导入"></a>ZEIT导入</h2><ol>
+<li><a class="link"   href="https://zeit.co/import/git" >https://zeit.co/import/git<i class="fas fa-external-link-alt"></i></a> 登录后导入仓库文件。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/e3e4ecef-f8a5-448f-af8a-1ddd07acaed0"
+                     
+                ><br></li>
+<li>选择你的Hexo源码仓库。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/56f12af8-e8b8-49c1-8aac-a0805a1267ec"
+                     
+                ><br></li>
+<li>设置项目名称（注意不能有小数点）。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/2893814f-bc0e-4b63-bae3-c71be66a65ba"
+                     
+                ><br></li>
+<li>设置项目运行目录，默认即可。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/c8216772-c030-41b9-89b2-22692a7ee20b"
+                     
+                ><br></li>
+<li>设置Hexo部署命令。<br>其中第一项Build Command改成<code>npm run deploy</code><br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/a01206fb-5549-4426-86be-cc8420495360"
+                     
+                ></li>
+</ol>
+<p>Finish.Enjoy it.</p>
+<p>当GitHub代码有新变动时触发ZEIT自动集成部署，并推送生成的页面到Coding。</p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>Coding</tag>
+        <tag>ZEIT</tag>
+        <tag>GitHub</tag>
+        <tag>CI</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>卸载iptables导致无法启动的修复措施</title>
+    <url>/archives/iptables/</url>
+    <content><![CDATA[<p>论如何高雅卸载iptables（误）</p>
+<a id="more"></a>
+<p>某天，在折腾服务器的时候，LNMP MySQL的3306端口一直无法外网链接，排查了服务器面板安全策略组和端口监听，一气之下直接<code>apt-get remove iptables</code>卸载iptables，执行过后发现居然真能连上后，然后，然后服务器就GG了………</p>
+<p>SSH连接没反应，用后台的VNC连上去后执行<code>ifconfig</code>，妈耶，列表就剩下一个孤零零的lo网卡………</p>
+<blockquote>
+<p>因为该操作会导致系统许多必要依赖组件被一起删掉，包括和网络相关的组件，所以在服务器断开ssh链接或者重启后，因为没有网卡配置信息而无法联网。</p>
+</blockquote>
+<h1 id="解决方案-误"><a href="#解决方案-误" class="headerlink" title="解决方案(误)"></a>解决方案(误)</h1><p>在经过一番<del>援交</del>学习后总结出以下方案</p>
+<ul>
+<li>删库跑路</li>
+<li>开工单求攻城狮<del>进行一场紧脏而又刺激的py交易</del></li>
+<li>获取网络配置，VNC连上去重新设置网卡信息</li>
+</ul>
+<hr>
+<blockquote>
+<p>关于具体网络配置，你可以发工单骚扰客服，也可以登录SolusVM/其他类似后台面板查找自己的网络配置</p>
+</blockquote>
+<hr>
+<h1 id="方法步骤"><a href="#方法步骤" class="headerlink" title="方法步骤"></a>方法步骤</h1><p>VNC登录服务器后</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#设置网卡eth0以及IP地址和子网掩码</span></span><br><span class="line">ifconfig eth0 你的IP地址 netmask 你的子网掩码</span><br><span class="line"></span><br><span class="line"><span class="comment">#设置网关</span></span><br><span class="line">route add default gw 你的网关</span><br><span class="line"></span><br><span class="line"><span class="comment">#设置DNS</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;</span></span><br><span class="line"><span class="string">nameserver 8.8.4.4</span></span><br><span class="line"><span class="string">nameserver 1.1.1.1&quot;</span> &gt;&gt; /etc/resolv.conf</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这时候，你会发现你的服务器能临时上网了，但重启后配置会恢复，这是我们只需要</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">apt-get install net-tools</span><br></pre></td></tr></table></figure>
+<p>来恢复network-manager</p>
+<h1 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h1><p>LNMP MySQL开启远程连接的正确姿势</p>
+<blockquote>
+<p>MySQL/MariaDB无法远程连接，如何开启？<br>为了安全LNMP默认是禁止远程连接的，开启方法：<a class="link"   href="https://bbs.vpser.net/thread-13563-1-1.html" >https://bbs.vpser.net/thread-13563-1-1.html<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>iptables</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux Cloud 内核介绍与安装</title>
+    <url>/archives/linux-cloud-kernel/</url>
+    <content><![CDATA[<p>也许是虚拟化设备最好用的内核（？）</p>
+<a id="more"></a>
+<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p><a class="link"   href="https://packages.debian.org/sid/linux-image-cloud-amd64" >https://packages.debian.org/sid/linux-image-cloud-amd64<i class="fas fa-external-link-alt"></i></a></p>
+<blockquote>
+<p>This package depends on the latest Linux kernel and modules for use on Amazon EC2, Google Compute Engine and Microsoft Azure cloud platforms.</p>
+</blockquote>
+<p>在基于虚拟化的64位设备，如 KVM Xen（不包括VMWare）的虚拟服务器（VPS）中，Cloud内核往往是最佳选择。<br>且本人已成功在128M内存安装并启动Debian10。</p>
+<h1 id="安装步骤"><a href="#安装步骤" class="headerlink" title="安装步骤"></a>安装步骤</h1><h2 id="安装所需依赖"><a href="#安装所需依赖" class="headerlink" title="安装所需依赖"></a>安装所需依赖</h2><p><code>apt install lsb-release</code></p>
+<h2 id="添加-Backports-源"><a href="#添加-Backports-源" class="headerlink" title="添加 Backports 源"></a>添加 Backports 源</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat &gt;&gt; /etc/apt/sources.list.d/backports.list &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">deb http://deb.debian.org/debian $(lsb_release -sc)-backports main </span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#国内可考虑使用中科大的源</span></span><br><span class="line">cat &gt;&gt; /etc/apt/sources.list.d/backports.list &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">deb https://mirrors.ustc.edu.cn/debian $(lsb_release -sc)-backports main </span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
+<h2 id="执行升级"><a href="#执行升级" class="headerlink" title="执行升级"></a>执行升级</h2><p><code>apt -t $(lsb_release -sc)-backports update &amp;&amp; apt -y -t $(lsb_release -sc)-backports upgrade</code></p>
+<blockquote>
+<p>注：更新的同时可能会自动更新新内核，可重启后卸载掉</p>
+</blockquote>
+<h2 id="安装内核"><a href="#安装内核" class="headerlink" title="安装内核"></a>安装内核</h2><p><code>sudo apt -t $(lsb_release -sc)-backports install linux-image-cloud-amd64 linux-headers-cloud-amd64</code></p>
+<p>安装成功后重启即可食用，可使用<code>uname -r</code>查看内核是否安装成功</p>
+<h2 id="卸载原来内核"><a href="#卸载原来内核" class="headerlink" title="卸载原来内核"></a>卸载原来内核</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">dpkg -l | grep linux-image</span><br><span class="line">apt-get purge 欲卸载的旧内核</span><br></pre></td></tr></table></figure>
+<h1 id="其他注意事项"><a href="#其他注意事项" class="headerlink" title="其他注意事项"></a>其他注意事项</h1><ul>
+<li>该内核<strong>仅有amd64位版本</strong></li>
+<li>该内核精简了云平台几乎不可能用到的驱动，如WiFi，蓝牙，故<strong>体积较小</strong>且<strong>VMWare不能安装此内核</strong>。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>Kernel</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Debian 10（Buster）使用源安装LNMP（LEMP）</title>
+    <url>/archives/lnmp/</url>
+    <content><![CDATA[<p>在最新版本的Debian 10（Buster）中安装LNMP<br> <a id="more"></a><br>理论能在Debian/Ubuntu任意版本安装最新lnmp（</p>
+<p><del>删库塔</del>是什么</p>
+<h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><h2 id="更新系统并安装依赖"><a href="#更新系统并安装依赖" class="headerlink" title="更新系统并安装依赖"></a>更新系统并安装依赖</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">apt update &amp;&amp; apt upgrade -y</span><br><span class="line">apt install -y build-essential curl vim wget unzip apt-transport-https lsb-release ca-certificates git</span><br></pre></td></tr></table></figure>
+<h2 id="加入-Backports-源"><a href="#加入-Backports-源" class="headerlink" title="加入 Backports 源"></a>加入 Backports 源</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat &gt;&gt; /etc/apt/sources.list.d/backports.list &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">deb http://deb.debian.org/debian $(lsb_release -sc)-backports main </span></span><br><span class="line"><span class="string">deb-src http://deb.debian.org/debian $(lsb_release -sc)-backports main </span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#国内可考虑使用中科大的源</span></span><br><span class="line">cat &gt;&gt; /etc/apt/sources.list.d/backports.list &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">deb https://mirrors.ustc.edu.cn/debian $(lsb_release -sc)-backports main </span></span><br><span class="line"><span class="string">deb-src https://mirrors.ustc.edu.cn/debian $(lsb_release -sc)-backports main </span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
+<h2 id="执行升级"><a href="#执行升级" class="headerlink" title="执行升级"></a>执行升级</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">apt -t $(lsb_release -sc)-backports update &amp;&amp; apt -y -t $(lsb_release -sc)-backports upgrade</span><br></pre></td></tr></table></figure>
+<h1 id="安装Nginx"><a href="#安装Nginx" class="headerlink" title="安装Nginx"></a>安装Nginx</h1><p>这里使用<a class="link"   href="https://deb.sury.org/" >Ondřej Surý<i class="fas fa-external-link-alt"></i></a>大神打包好的 Nginx 源</p>
+<h2 id="添加GPG"><a href="#添加GPG" class="headerlink" title="添加GPG"></a>添加GPG</h2><p><code>wget -O /etc/apt/trusted.gpg.d/nginx-mainline.gpg https://packages.sury.org/nginx-mainline/apt.gpg</code></p>
+<h2 id="添加sury源"><a href="#添加sury源" class="headerlink" title="添加sury源"></a>添加sury源</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat &gt;&gt; /etc/apt/sources.list.d/nginx.list &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">deb https://packages.sury.org/nginx-mainline/ $(lsb_release -sc) main </span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#国内同样可考虑使用香港源</span></span><br><span class="line">cat &gt;&gt; /etc/apt/sources.list.d/nginx.list &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">deb https://mirror.xtom.com.hk/sury/nginx-mainline/ $(lsb_release -sc) main </span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p><code>apt update &amp;&amp; apt install -y nginx-extras</code></p>
+<blockquote>
+<p>安装前最好屏蔽Backports仓库下的Nginx</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat &gt;&gt; /etc/apt/preferences &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">Package: nginx*</span></span><br><span class="line"><span class="string">Pin: release a=buster-backports </span></span><br><span class="line"><span class="string">Pin-Priority: 499</span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
+<p>安装完毕后，可以使用<code>nginx -v</code>查看当前安装版本了</p>
+<h2 id="开机启动Nginx"><a href="#开机启动Nginx" class="headerlink" title="开机启动Nginx"></a>开机启动Nginx</h2><p><code>systemctl enable nginx</code></p>
+<h1 id="安装PHP"><a href="#安装PHP" class="headerlink" title="安装PHP"></a>安装PHP</h1><p>这里同样使用<a class="link"   href="https://deb.sury.org/" >Ondřej Surý<i class="fas fa-external-link-alt"></i></a>大神的PHP源，同时他也是Ubuntu/Debian PHP软件源的官方维护者之一。</p>
+<h2 id="添加GPG-1"><a href="#添加GPG-1" class="headerlink" title="添加GPG"></a>添加GPG</h2><p><code>wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg</code></p>
+<h2 id="添加sury源-1"><a href="#添加sury源-1" class="headerlink" title="添加sury源"></a>添加sury源</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sh -c <span class="string">&#x27;echo &quot;deb https://packages.sury.org/php/ $(lsb_release -sc) main&quot; &gt; /etc/apt/sources.list.d/php.list&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#国内机器同样可以采用香港源</span></span><br><span class="line">sh -c <span class="string">&#x27;echo &quot;deb https://mirror.xtom.com.hk/sury/php/ $(lsb_release -sc) main&quot; &gt; /etc/apt/sources.list.d/php.list&#x27;</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h2><p>这里以<code>php7.3</code>与使用opcache缓存为例</p>
+<p><code>apt update &amp;&amp; apt install -y php7.3-fpm php7.3-mysql php7.3-curl php7.3-gd php7.3-mbstring php7.3-xml php7.3-xmlrpc php7.3-opcache php7.3-zip php7.3 php7.3-bz2</code></p>
+<h2 id="设置php"><a href="#设置php" class="headerlink" title="设置php"></a>设置php</h2><p>修改<code>/etc/php7.3/fpm/php.ini</code>,防止跨目录攻击</p>
+<p><code>sed -i &#39;s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/&#39; /etc/php/7.3/fpm/php.ini</code></p>
+<h1 id="安装MySQL"><a href="#安装MySQL" class="headerlink" title="安装MySQL"></a>安装MySQL</h1><p>考虑之下，这里以安装Percona Server 8.0为例</p>
+<blockquote>
+<p>Percona Server是MySQl其中分支，同MariaDB一样，拥有完全兼容 MySQL 协议，性能优化等特点。<br>注意：最好使用2G以上运存服务器!若为1G左右更推荐安装MySQL(或Percona Server)5.6 及以下版本</p>
+</blockquote>
+<h2 id="添加并启动Percona-Server源"><a href="#添加并启动Percona-Server源" class="headerlink" title="添加并启动Percona Server源"></a>添加并启动Percona Server源</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb</span><br><span class="line"></span><br><span class="line"><span class="comment">#清华源</span></span><br><span class="line">wget https://mirrors.tuna.tsinghua.edu.cn/percona/apt/percona-release_latest.$(lsb_release -sc)_all.deb</span><br><span class="line"></span><br><span class="line">dpkg -i percona-release_latest.$(lsb_release -sc)_all.deb</span><br><span class="line"></span><br><span class="line"><span class="comment">#国内可替换成清华源</span></span><br><span class="line">sed -i <span class="string">&#x27;s/repo.percona.com/mirrors.tuna.tsinghua.edu.cn\/percona/g&#x27;</span> /etc/apt/sources.list.d/percona-release.list 即可</span><br><span class="line"></span><br><span class="line">apt update</span><br><span class="line">percona-release setup ps80</span><br></pre></td></tr></table></figure>
+<h2 id="安装Percona-Server"><a href="#安装Percona-Server" class="headerlink" title="安装Percona Server"></a>安装Percona Server</h2><p><code>apt install -y percona-server-server</code></p>
+<p>安装时会弹出设置密码界面，自行设置即可<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://i.loli.net/2019/07/28/5d3d1fd2f1ab231803.jpg"
+                      alt="设置密码"
+                ></p>
+<p>中间会弹出一大堆的文档，OK即可</p>
+<p>然后会弹出加密方法选择页面，推荐选第二个，兼容<br>传统版本<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://i.loli.net/2019/07/28/5d3d1ffdc732169968.jpg"
+                     
+                ></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">………………………………………</span><br><span class="line"> * Percona Server is distributed with several useful UDF (User Defined Function) from Percona Toolkit.</span><br><span class="line"> * Run the following commands to create these <span class="built_in">functions</span>:</span><br><span class="line"></span><br><span class="line">        mysql -e <span class="string">&quot;CREATE FUNCTION fnv1a_64 RETURNS INTEGER SONAME &#x27;libfnv1a_udf.so&#x27;&quot;</span></span><br><span class="line">        mysql -e <span class="string">&quot;CREATE FUNCTION fnv_64 RETURNS INTEGER SONAME &#x27;libfnv_udf.so&#x27;&quot;</span></span><br><span class="line">        mysql -e <span class="string">&quot;CREATE FUNCTION murmur_hash RETURNS INTEGER SONAME &#x27;libmurmur_udf.so&#x27;&quot;</span></span><br><span class="line"></span><br><span class="line"> * See http://www.percona.com/doc/percona-server/8.0/management/udf_percona_toolkit.html <span class="keyword">for</span> more details</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Created symlink /etc/systemd/system/multi-user.target.wants/mysql.service → /lib/systemd/system/mysql.service.</span><br></pre></td></tr></table></figure>
+<p>至此已完成安装，执行<code>mysql -V</code>即可查看当前版本</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">root@Martis:~<span class="comment"># mysql -V</span></span><br><span class="line">mysql  Ver 8.0.15-6 <span class="keyword">for</span> debian-linux-gnu on x86_64 (Percona Server (GPL), Release <span class="string">&#x27;6&#x27;</span>, Revision <span class="string">&#x27;63abd08&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<h1 id="常用管理命令"><a href="#常用管理命令" class="headerlink" title="常用管理命令"></a>常用管理命令</h1><p>Nginx启动/停止/重启 <code>systemctl start/stop/restart nginx</code></p>
+<p>php7.3启动/停止/重启 <code>systemctl start/stop/restart php7.3-fpm</code></p>
+<p>MySQL启动/停止/重启 <code>systemctl start/stop/restart mysql</code></p>
+<p>Nginx配置路径<code>/etc/nginx/sites-enabled/*.conf</code></p>
+<p>Nginx通用配置</p>
+<figure class="highlight nginxconf"><table><tr><td class="code"><pre><span class="line"><span class="section">server</span> &#123; </span><br><span class="line">             <span class="attribute">listen</span> <span class="number">80</span>;</span><br><span class="line">             <span class="attribute">listen</span> [::]:<span class="number">80</span>;</span><br><span class="line">             <span class="attribute">root</span> /var/www/example.com;</span><br><span class="line">             <span class="attribute">index</span> index.php index.html index.htm;</span><br><span class="line">             <span class="attribute">server_name</span> example.com;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>开启php7.3只需在相应配置中添加伪静态</p>
+<figure class="highlight nginxconf"><table><tr><td class="code"><pre><span class="line"><span class="attribute">location</span> <span class="regexp">~ \.php$</span> &#123;</span><br><span class="line">      <span class="attribute">include</span> snippets/fastcgi-php.conf;</span><br><span class="line">      <span class="attribute">fastcgi_pass</span> unix:/run/php/php7.3-fpm.sock;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>注：php版本均以7.3为例</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Debian 10</tag>
+        <tag>Debian</tag>
+        <tag>LNMP</tag>
+        <tag>LEMP</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Magisk自定义通道</title>
+    <url>/archives/magisk-files/</url>
+    <content><![CDATA[<p>Magisk国内中转自定义通道</p>
+<a id="more"></a>
+<p><a class="link"   href="https://api.wsl.pub/magisk/" >Api Docs<i class="fas fa-external-link-alt"></i></a></p>
+<p>该通道包含稳定版(Stable)，测试版(Beta)，金丝雀版(Canary)的中国大陆加速服务。</p>
+<p>Canary采用国内CDN以解决大陆访问GitHub以及Amazon S3下载速度慢的问题，Beta/Stable则采用Nginx反代方式加速资源。</p>
+<p>所有文件均来自GitHub分发，同步周期为12h，绝不含其他内容，可放心食用。如有此通道导致的变砖/死机/损坏等问题，均不受理。</p>
+<hr>
+<p>稳定版 <code>https://api.wsl.pub/magisk/stable.json</code></p>
+<p>测试版 <code>https://api.wsl.pub/magisk/beta.json</code></p>
+<p>金丝雀版 <code>https://api.wsl.pub/magisk/canary.json</code></p>
+<hr>
+<p>食用方法：Magisk Manager - 设置 - 更新通道 - 自定义，复制粘贴上面所需版本的网址。</p>
+
+<style type="text/css">
+.youknowit { color: #000; background-color: #000; }
+.youknowit:hover { color: #fff; }
+</style>
+
+<span class="youknowit"> 我很可爱，请给我钱 </span><br/>
+<span class="youknowit"> If this helps you, plz 打钱 to my Bitcoin wallet：1MDn8DL9zzRmrQ15aQGszcUx4VMPQBnyDT </span>
+
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>Magisk</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux安装Node.js环境</title>
+    <url>/archives/nodejs/</url>
+    <content><![CDATA[<p>官方源或nvm方式安装nodejs<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/ad151533-b43e-4218-9686-a39d676a6798"
+                     
+                ></p>
+<a id="more"></a>
+<h1 id="常规安装"><a href="#常规安装" class="headerlink" title="常规安装"></a>常规安装</h1><p>以安装v12.x.x版本为例</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#Ubuntu/Debian </span></span><br><span class="line">curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -</span><br><span class="line">apt update &amp;&amp; apt install -y nodejs</span><br><span class="line"></span><br><span class="line"><span class="comment">#CentOS/RedHat</span></span><br><span class="line">curl --silent --location https://rpm.nodesource.com/setup_12.x | sudo bash -</span><br><span class="line">yum update &amp;&amp; yum install -y nodejs</span><br></pre></td></tr></table></figure>
+<p>然后执行<code>node -v</code>与<code>npm -v</code>查看是否安装成功</p>
+<h1 id="NVM安装"><a href="#NVM安装" class="headerlink" title="NVM安装"></a>NVM安装</h1><blockquote>
+<p>Node Version Manager，简称NVM，为Node版本管理器</p>
+</blockquote>
+<h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.35.2/install.sh | bash</span><br><span class="line"></span><br><span class="line"><span class="comment">#或使用wget</span></span><br><span class="line"> </span><br><span class="line">wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.35.2/install.sh | bash</span><br></pre></td></tr></table></figure>
+<h2 id="激活nvm"><a href="#激活nvm" class="headerlink" title="激活nvm"></a>激活nvm</h2><p><code>source ~/.nvm/nvm.sh</code></p>
+<p>激活后，重启下命令行窗口，或者直接打开一个新的命令行窗口，进行后续操作。</p>
+<h2 id="列出node版本"><a href="#列出node版本" class="headerlink" title="列出node版本"></a>列出node版本</h2><p><code>nvm ls-remote</code></p>
+<p><code>nvm ls-remote</code>会列出所有可用的 Nodejs 版本，如果输出中看到很多很多个版本号，就表示 nvm 安装好了。最后一个版本号就是当前最新的 Nodejs 版本，这里安装以本文发行时间的最新版本<code>v12.7.0</code>为例</p>
+<p><code>nvm install v12.7.0</code></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">root@Martis:~<span class="comment"># nvm install v12.7.0</span></span><br><span class="line">Downloading and installing node v12.7.0...</span><br><span class="line">Downloading https://nodejs.org/dist/v12.7.0/node-v12.7.0-linux-x64.tar.xz...</span><br><span class="line"><span class="comment">############################################################ 100.0%Computing checksum with sha256sum</span></span><br><span class="line">Checksums matched!</span><br><span class="line">Now using node v12.7.0 (npm v6.10.0)</span><br><span class="line">Creating default <span class="built_in">alias</span>: default -&gt; v12.7.0</span><br></pre></td></tr></table></figure>
+<p>到此已经成功安装<code>Nodejs v12.7.0</code> <code>npm v6.10.0</code>版本</p>
+<h2 id="切换版本"><a href="#切换版本" class="headerlink" title="切换版本"></a>切换版本</h2><p>前面所介绍的，NVM为Node版本切换器，所以可以<br>随意切换版本。在此以切换<code>v11.0.0</code>版本为例</p>
+<p><code>nvm install v11.0.0</code></p>
+<p>装好之后，可以执行<code>nvm ls</code>查看安装的版本，以及<br>default指向的默认版本。</p>
+<p>修改默认版本方法：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">nvm <span class="built_in">alias</span> default v*.*.*</span><br></pre></td></tr></table></figure>
+<p>#其中*替换成对应版本即可</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>个人比较喜欢第二种方式，可以列出所有nodejs版本，且能方便快捷切换版本</p>
+<p>注：国内机器可以考虑使用淘宝源，以加快速度</p>
+<p><code>npm install -g cnpm --registry=https://registry.npm.taobao.org</code></p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Nodejs</tag>
+        <tag>npm</tag>
+        <tag>nvm</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Debian9开机启动rc.local</title>
+    <url>/archives/rc-local/</url>
+    <content><![CDATA[<p>在使用较新版本的Ubuntu/Debian系统使用rc.local</p>
+<a id="more"></a>
+
+<p>在使用较新版本的Ubuntu/Debian系统时，原来写入/etc/rc.local或者/etc/rc.d/rc.local文件中的开机命令不执行了?</p>
+<blockquote>
+<p>Ubuntu 16.04以后，默认进程启动管理已经切换至systemd，不再使用init.d。</p>
+</blockquote>
+<p>如果想和之前一样使用rc.local设置开机自启动，可以通过以下步骤</p>
+<h1 id="修改rc-local-service"><a href="#修改rc-local-service" class="headerlink" title="修改rc-local.service"></a>修改rc-local.service</h1><p>我们可以发现，/lib/systemd/system/目录下存在一个rc-local.service，但缺少Install信息，系统就不认为他是个systemd服务。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat &gt; /etc/systemd/system/rc-local.service &lt;&lt;<span class="string">EOF</span></span><br><span class="line"><span class="string">Description=/etc/rc.local Compatibility</span></span><br><span class="line"><span class="string">Documentation=man:systemd-rc-local-generator(8)</span></span><br><span class="line"><span class="string">ConditionFileIsExecutable=/etc/rc.local</span></span><br><span class="line"><span class="string">After=network.target</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Service]</span></span><br><span class="line"><span class="string">Type=forking</span></span><br><span class="line"><span class="string">ExecStart=/etc/rc.local start</span></span><br><span class="line"><span class="string">TimeoutSec=0</span></span><br><span class="line"><span class="string">RemainAfterExit=yes</span></span><br><span class="line"><span class="string">GuessMainPID=no</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Install]</span></span><br><span class="line"><span class="string">WantedBy=multi-user.target</span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
+<p>加入所需启动的服务即可，记得权限<br><code>chmod +x /etc/rc.local</code></p>
+<h1 id="启动rc-local服务"><a href="#启动rc-local服务" class="headerlink" title="启动rc-local服务"></a>启动rc-local服务</h1><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start rc-local</span><br><span class="line">systemctl enable rc-local</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Debian</tag>
+        <tag>Ubuntu</tag>
+        <tag>rc.local</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>折腾TCShare云盘目录程序</title>
+    <url>/archives/tcshare/</url>
+    <content><![CDATA[<p><del>TCShare v3安装折腾记录。</del></p>
+<a id="more"></a>
+<p><a class="link"   href="https://pan.wsl.pub/" >演示站<i class="fas fa-external-link-alt"></i></a></p>
+<p>昨天撸了个30T的bug天翼云，也不知道什么时候收回，就搭了个这东西。 <a class="link"   href="https://github.com/xyToki/TCShare" >项目地址<i class="fas fa-external-link-alt"></i></a></p>
+<p>个人服务器环境为<code>Debian 10</code>，<code>php7.2</code>，<code>Nginx1.16.1</code> </p>
+<h1 id="准备阶段"><a href="#准备阶段" class="headerlink" title="准备阶段"></a>准备阶段</h1><h2 id="下载TCShare"><a href="#下载TCShare" class="headerlink" title="下载TCShare"></a>下载TCShare</h2><p>首先下载TCShare到你的服务器目录<br><code>git clone https://github.com/xytoki/TCShare.git 你的服务器目录</code></p>
+<h2 id="安装Composer"><a href="#安装Composer" class="headerlink" title="安装Composer"></a>安装Composer</h2><p>这里不再阐述，Oneinstack用户可直接到Oneinstack目录中执行<code>./addons.sh</code>安装。</p>
+<h2 id="删除php禁用函数"><a href="#删除php禁用函数" class="headerlink" title="删除php禁用函数"></a>删除php禁用函数</h2><p>自行修改php.ini配置，在disable_functions（禁用函数列表）中删除 <code>putenv</code> <code>proc_open</code>。<br>然后执行 <code>service php-fpm restart</code> 来重启PHP。</p>
+<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><h2 id="安装扩展包"><a href="#安装扩展包" class="headerlink" title="安装扩展包"></a>安装扩展包</h2><p>切换到程序目录，执行 <code>composer install</code></p>
+<p>这里我出现的问题是</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">The Process class relies on proc_open, <span class="built_in">which</span> is not available on your PHP installation.</span><br><span class="line">The archive may contain identical file names with different capitalization (<span class="built_in">which</span> fails on <span class="keyword">case</span> insensitive filesystems)</span><br><span class="line">Unzip with unzip <span class="built_in">command</span> failed, falling back to ZipArchive class</span><br></pre></td></tr></table></figure>
+<p>解决方法为php禁用函数删除 <code>proc_open</code> 和 <code>apt-get install -y zip unzip</code></p>
+<h2 id="创建-env文件"><a href="#创建-env文件" class="headerlink" title="创建.env文件"></a>创建.env文件</h2><p>在程序目录创建.env文件，并自行写入配置。</p>
+<figure class="highlight php"><figcaption><span>.env</span></figcaption><table><tr><td class="code"><pre><span class="line">XS_KEY_ct=ctyun</span><br><span class="line">XS_KEY_ct_FD=     <span class="comment">#应用文件夹名</span></span><br><span class="line">XS_KEY_ct_AK=     <span class="comment">#AK</span></span><br><span class="line">XS_KEY_ct_SK=     <span class="comment">#SK</span></span><br><span class="line"></span><br><span class="line">XS_APP_1=/              <span class="comment">#挂载路径</span></span><br><span class="line">XS_APP_1_NAME=TCShare   <span class="comment">#网盘名称</span></span><br><span class="line">XS_APP_1_THEME=mdui     <span class="comment">#界面主题</span></span><br><span class="line">XS_APP_1_BASE=/         <span class="comment">#网盘内路径</span></span><br><span class="line">XS_APP_1_KEY=ct         <span class="comment">#对应上面Key的ID</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>其中的 App Key，App Secret 需自己配置，也可私信我获取<br>多盘搭建的话可参考作者的.env文件配置 <a class="link"   href="https://github.com/xyToki/TCShare#v3%E7%89%88%E6%9C%AC%E4%BB%85%E6%94%AF%E6%8C%81%E4%BD%BF%E7%94%A8env%E6%96%87%E4%BB%B6%E6%88%96%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE" >README<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<h2 id="配置Nginx伪静态"><a href="#配置Nginx伪静态" class="headerlink" title="配置Nginx伪静态"></a>配置Nginx伪静态</h2><p>防止.env文件内容暴露</p>
+<figure class="highlight nginx"><figcaption><span>vhost.conf</span></figcaption><table><tr><td class="code"><pre><span class="line"><span class="attribute">try_files</span> $uri $uri/ /index.php$is_args$args;</span><br><span class="line"><span class="attribute">location</span> <span class="regexp">~ /\.env</span> &#123;</span><br><span class="line">    <span class="attribute">deny</span> all;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="授权"><a href="#授权" class="headerlink" title="授权"></a>授权</h1><h2 id="获取授权链接"><a href="#获取授权链接" class="headerlink" title="获取授权链接"></a>获取授权链接</h2><p>直接访问你的服务器地址。点击 <code>Click here to authorize</code> 授权。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/49046d53-1e61-43d4-b0bc-08e436a13a8c"
+                     
+                ></p>
+<h2 id="登录账号"><a href="#登录账号" class="headerlink" title="登录账号"></a>登录账号</h2><p>输入你的天翼云账号密码，登录即可。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/d3374f06-e05d-49dd-bb01-c7c258e6a323"
+                     
+                ></p>
+<h2 id="获取Access-Token"><a href="#获取Access-Token" class="headerlink" title="获取Access Token"></a>获取Access Token</h2><p>登录后会自动跳转，得到Access Token（由于我的Token已经获取成功，故不会再显示）<br>后在 <code>.env</code> 加入一行 <code>XS_KEY_ct_ACCESS_TOKEN=你的AccessToken</code></p>
+<blockquote>
+<p>如果跳转为127.0.0.1的话，请自行修改成你的服务器地址。</p>
+</blockquote>
+<h1 id="后续"><a href="#后续" class="headerlink" title="后续"></a>后续</h1><p>每个月都要手动为每个网盘的Access Token续期。续期方法为访问你的服务器地址后加/-renew即可，如 <code>http://mysite.com/-renew</code>。</p>
+<blockquote>
+<p>按原作者的说法，定时任务是无法生效的。</p>
+</blockquote>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/472f9e6f-cbab-457b-8647-f6e072651202"
+                     
+                ></p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>TCShare</tag>
+        <tag>ctyun</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Valine自定义表情与QQ邮箱头像支持</title>
+    <url>/archives/valine-custom/</url>
+    <content><![CDATA[<p><del>魔改Valine，添加自定义表情与QQ邮箱头像支持</del></p>
+<a id="more"></a>
+<h1 id="添加QQ邮箱头像支持"><a href="#添加QQ邮箱头像支持" class="headerlink" title="添加QQ邮箱头像支持"></a>添加QQ邮箱头像支持</h1><h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h2><p><strong>v1.4.5版本后所述功能均已实现，此文章仅为存档参考</strong><br>由于 <code>v1.4.x</code> 版本尚未开源，以下步骤均为修改已编译的 <code>Valine.min.js</code> 进行操作</p>
+<blockquote>
+<p>由于某些原因，src目录将从v1.4.0后暂停更新.<br>For some reason, the src directory will be suspended from updating after v1.4.0.</p>
+</blockquote>
+<hr>
+<p>通过浏览器F12查看代码，定位头像后发现相关代码为 <code>&lt;img class=&quot;vimg&quot; src=&quot;xxx&quot;&gt;</code><br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/d7295626-8a98-44d6-ac15-1ffa1b6aed28"
+                     
+                ></p>
+<p>以本文 <code>v1.4.4</code> 最新版本为例，下载 <a class="link"   href="https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js" >Valine.min.js<i class="fas fa-external-link-alt"></i></a> 后<br>Ctrl + F 搜索 <code>img class=&quot;vimg&quot; src=</code> ，得到的代码片段为<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/f919ac9b-8cb7-4421-8dd8-755c3e6a438c"
+                     
+                ></p>
+<p>可以看到，img src后的内容大致为 Gravatar CDN 地址 + 获取邮箱并MD5加密 + 返回Valine版本</p>
+<figure class="highlight javascript"><figcaption><span>Valine.min.js</span></figcaption><table><tr><td class="code"><pre><span class="line"><span class="comment">// &lt;img src=&gt;</span></span><br><span class="line">u = E.hide ? <span class="string">&quot;&quot;</span> : <span class="string">&#x27;&lt;img class=&quot;vimg&quot; src=&quot;&#x27;</span> + (E.cdn + (<span class="number">0</span>, s.default)(t.get(<span class="string">&quot;mail&quot;</span>)) + E.params) + <span class="string">&#x27;&quot;&gt;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// CDN引用部分</span></span><br><span class="line">E = &#123;</span><br><span class="line">cdn: <span class="string">&quot;https://gravatar.loli.net/avatar/&quot;</span>,</span><br><span class="line">ds: [<span class="string">&quot;mp&quot;</span>, <span class="string">&quot;identicon&quot;</span>, <span class="string">&quot;monsterid&quot;</span>, <span class="string">&quot;wavatar&quot;</span>, <span class="string">&quot;robohash&quot;</span>, <span class="string">&quot;retro&quot;</span>, <span class="string">&quot;&quot;</span>],</span><br><span class="line">params: <span class="string">&quot;&quot;</span>,</span><br><span class="line">hide: !<span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>QQ头像的接口为 <code>http://q1.qlogo.cn/g?b=qq&amp;nk=QQ号&amp;s=尺寸</code> </p>
+<blockquote>
+<p>s=(spec)对应的头像尺寸有px 40×40, px 100×100 <del>px 640×640</del><br>测试发现数值1-5/40/640为px 40×40，数值100为px 100×100</p>
+</blockquote>
+<p>所以最终的接口大致为 <code>http://q1.qlogo.cn/g?b=qq&amp;nk=10001&amp;s=100</code> </p>
+<h2 id="最终目标"><a href="#最终目标" class="headerlink" title="最终目标"></a>最终目标</h2><ul>
+<li>获取邮箱判断是否为qq邮箱</li>
+<li>提取qq号</li>
+<li>将Valine中的头像地址改为上述接口地址</li>
+</ul>
+<h2 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h2><ul>
+<li>判断是否是QQ邮箱，，是则以下操作，否则默认Gravator头像接口</li>
+<li>正则筛选剔除–重命名了带英文的qq邮箱 获取QQ号</li>
+<li>拼接头像地址</li>
+<li>加入到img src</li>
+</ul>
+<h2 id="修改Valine-js"><a href="#修改Valine-js" class="headerlink" title="修改Valine js"></a>修改Valine js</h2><p>部分代码修改如下</p>
+<figure class="highlight javascript"><figcaption><span>Valine.min.js</span></figcaption><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> avatar_img = E.cdn + (<span class="number">0</span>, s.default)(t.get(<span class="string">&quot;mail&quot;</span>)) + E.params;</span><br><span class="line"><span class="keyword">if</span> (t.get(<span class="string">&quot;mail&quot;</span>).indexOf(<span class="string">&quot;@qq.com&quot;</span>) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> prefix = t.get(<span class="string">&quot;mail&quot;</span>).replace(<span class="regexp">/@.*/</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">    <span class="keyword">var</span> pattern = <span class="regexp">/^\d+$/g</span>;</span><br><span class="line">    <span class="keyword">var</span> result = prefix.match(pattern);</span><br><span class="line">    <span class="keyword">if</span> (result !== <span class="literal">null</span>) &#123;</span><br><span class="line">        avatar_img = <span class="string">&quot;//q1.qlogo.cn/g?b=qq&amp;nk=&quot;</span> + prefix + <span class="string">&quot;&amp;s=100&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> l = t.get(<span class="string">&quot;link&quot;</span>) ? <span class="regexp">/^https?\:\/\//</span>.test(t.get(<span class="string">&quot;link&quot;</span>)) ? t.get(<span class="string">&quot;link&quot;</span>) : <span class="string">&quot;http://&quot;</span> + t.get(<span class="string">&quot;link&quot;</span>) : <span class="string">&quot;&quot;</span>,</span><br><span class="line">    c = l ? <span class="string">&#x27;&lt;a class=&quot;vnick&quot; rel=&quot;nofollow&quot; href=&quot;&#x27;</span> + l + <span class="string">&#x27;&quot; target=&quot;_blank&quot; &gt;&#x27;</span> + t.get(<span class="string">&quot;nick&quot;</span>) + <span class="string">&quot;&lt;/a&gt;&quot;</span> : <span class="string">&#x27;&lt;span class=&quot;vnick&quot;&gt;&#x27;</span> + t.get(<span class="string">&quot;nick&quot;</span>) + <span class="string">&quot;&lt;/span&gt;&quot;</span>,</span><br><span class="line">    u = E.hide ? <span class="string">&quot;&quot;</span> : <span class="string">&#x27;&lt;img class=&quot;vimg&quot; src=&quot;&#x27;</span> + (avatar_img) + <span class="string">&#x27;&quot;&gt;&#x27;</span>,</span><br></pre></td></tr></table></figure>
+<p>修改前后diff</p>
+<figure class="highlight diff"><figcaption><span>Valine.min.js</span></figcaption><table><tr><td class="code"><pre><span class="line">var j = function (t, n, r) &#123;</span><br><span class="line">        var o = (0, A.default)(&#x27;&lt;div class=&quot;vcard&quot; id=&quot;&#x27; + t.id + &#x27;&quot;&gt;&lt;/div&gt;&#x27;),</span><br><span class="line">            i = t.get(&quot;ua&quot;),</span><br><span class="line">            a = &quot;&quot;;</span><br><span class="line">        i &amp;&amp; !/ja/.test(e.config.lang) &amp;&amp; (i = A.default.detect(i), a = &#x27;&lt;span class=&quot;vsys&quot;&gt;&#x27; + i.browser + &quot; &quot; + i.version + &#x27;&lt;/span&gt; &lt;span class=&quot;vsys&quot;&gt;&#x27; + i.os + &quot; &quot; + i.osVersion + &quot;&lt;/span&gt;&quot;), &quot;*&quot; <span class="comment">=== e.config.path &amp;&amp; (a = &#x27;&lt;a href=&quot;&#x27; + t.get(&quot;url&quot;) + &#x27;&quot; class=&quot;vsys&quot;&gt;&#x27; + t.get(&quot;url&quot;) + &quot;&lt;/a&gt;&quot;);</span></span><br><span class="line">        var l = t.get(&quot;link&quot;) ? /^https?\:\/\//.test(t.get(&quot;link&quot;)) ? t.get(&quot;link&quot;) : &quot;http://&quot; + t.get(&quot;link&quot;) : &quot;&quot;,</span><br><span class="line"><span class="addition">+       var avatar_img = E.cdn + (0, s.default)(t.get(&quot;mail&quot;)) + E.params; //默认Gravator头像接口</span></span><br><span class="line"><span class="addition">+       if (t.get(&quot;mail&quot;).indexOf(&quot;@qq.com&quot;) &gt;= 0) &#123;</span></span><br><span class="line"><span class="addition">+       var prefix = t.get(&quot;mail&quot;).replace(/@.*/, &quot;&quot;); //前缀</span></span><br><span class="line"><span class="addition">+       var pattern = /^\d+$/g; //正则表达式</span></span><br><span class="line"><span class="addition">+       var result = prefix.match(pattern); </span></span><br><span class="line"><span class="addition">+       if (result !== null) &#123;</span></span><br><span class="line"><span class="addition">+           avatar_img = &quot;//q1.qlogo.cn/g?b=qq&amp;nk=&quot; + prefix + &quot;&amp;s=100&quot;;</span></span><br><span class="line"><span class="addition">+           &#125;</span></span><br><span class="line"><span class="addition">+       &#125;</span></span><br><span class="line">            c = l ? &#x27;&lt;a class=&quot;vnick&quot; rel=&quot;nofollow&quot; href=&quot;&#x27; + l + &#x27;&quot; target=&quot;_blank&quot; &gt;&#x27; + t.get(&quot;nick&quot;) + &quot;&lt;/a&gt;&quot; : &#x27;&lt;span class=&quot;vnick&quot;&gt;&#x27; + t.get(&quot;nick&quot;) + &quot;&lt;/span&gt;&quot;,</span><br><span class="line"><span class="deletion">-           u = E.hide ? &quot;&quot; : &#x27;&lt;img class=&quot;vimg&quot; src=&quot;&#x27; + (E.cdn + (0, s.default)(t.get(&quot;mail&quot;)) + E.params) + &#x27;&quot;&gt;&#x27;,</span></span><br><span class="line"><span class="addition">+           u = E.hide ? &quot;&quot; : &#x27;&lt;img class=&quot;vimg&quot; src=&quot;&#x27; + (avatar_img) + &#x27;&quot;&gt;&#x27;,</span></span><br><span class="line">            d = u + &#x27;&lt;div class=&quot;vh&quot;&gt;&lt;div class=&quot;vhead&quot;&gt;&#x27; + c + &quot; &quot; + a + &#x27;&lt;/div&gt;&lt;div class=&quot;vmeta&quot;&gt;&lt;span class=&quot;vtime&quot; &gt;&#x27; + (0, w.default)(t.get(&quot;insertedAt&quot;), e.i18n) + &#x27;&lt;/span&gt;&lt;span class=&quot;vat&quot; data-root-id=&quot;&#x27; + (t.get(&quot;rid&quot;) || t.id) + &#x27;&quot; data-self-id=&quot;&#x27; + t.id + &#x27;&quot;&gt;&#x27; + e.i18n.t(&quot;reply&quot;) + &#x27;&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;vcontent&quot; data-expand=&quot;&#x27; + e.i18n.t(&quot;expand&quot;) + &#x27;&quot;&gt;&#x27; + (0, k.default)(t.get(&quot;comment&quot;)) + &#x27;&lt;/div&gt;&lt;div class=&quot;vreply-wrapper&quot; data-self-id=&quot;&#x27; + t.id + &#x27;&quot;&gt;&lt;/div&gt;&lt;div class=&quot;vquote&quot; data-self-id=&quot;&#x27; + t.id + &#x27;&quot;&gt;&lt;/div&gt;&lt;/div&gt;&#x27;;</span><br><span class="line">        o.html(d);</span><br></pre></td></tr></table></figure>
+<p>然后主题引用自己修改后的Valine.min.js，即可开箱食用。<br><a href="#icarus%E4%B8%BB%E9%A2%98%E5%BC%95%E7%94%A8">icarus主题引用方法</a></p>
+<h1 id="添加自定义表情"><a href="#添加自定义表情" class="headerlink" title="添加自定义表情"></a>添加自定义表情</h1><h2 id="修改src"><a href="#修改src" class="headerlink" title="修改src"></a>修改src</h2><p>编译前修改 <a class="link"   href="https://github.com/xCss/Valine/blob/master/src/plugins/emojis/light.json" >plugins/emojis/light.json<i class="fas fa-external-link-alt"></i></a></p>
+<blockquote>
+<p>v1.4.x版本不适用</p>
+</blockquote>
+<h2 id="配置项添加"><a href="#配置项添加" class="headerlink" title="配置项添加"></a>配置项添加</h2><p>配置项中添加</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">emoticon_url: &#39;&#x2F;demo&#x2F;demo&#39;,</span><br><span class="line">emoticon_list: [&quot;xxx.jpg&quot;]</span><br></pre></td></tr></table></figure>
+<p>如</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">emoticon_url: &#39;https:&#x2F;&#x2F;cloud.panjunwen.com&#x2F;alu&#39;,</span><br><span class="line">emoticon_list: [&quot;狂汗.png&quot;,&quot;不说话.png&quot;,&quot;汗.png&quot;]</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>反正我是没成功过.jpg</p>
+</blockquote>
+<h2 id="直接修改Valine-js文件"><a href="#直接修改Valine-js文件" class="headerlink" title="直接修改Valine js文件"></a>直接修改Valine js文件</h2><p><del>故技重施</del></p>
+<p>在Valine.min.js搜索定位到表情地址<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/51f0e8c8-ee77-4704-9d5d-52c5bbbf7d45"
+                      alt="大概在这（反正不搜索能翻半天）"
+                ><br>然后照葫芦画瓢修改即可。<br>格式大致如下</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> (<span class="params">e, t</span>) </span>&#123;</span><br><span class="line">        e.exports = &#123;</span><br><span class="line">            滑稽: <span class="string">&quot;https://cdn.jsdelivr.net/gh/wittoy/cdn@latest/images/valine/huaji.gif&quot;</span>,</span><br><span class="line">            彩虹滑稽: <span class="string">&quot;https://cdn.jsdelivr.net/gh/Wittoy/cdn@latest/images/valine/chhuaji.webp&quot;</span>,</span><br><span class="line">            doge: <span class="string">&quot;https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/a1/2018new_doge02_org.png&quot;</span>,</span><br><span class="line">            dog: <span class="string">&quot;https://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/22/2018new_erha_org.png&quot;</span>,</span><br><span class="line">            高兴: <span class="string">&quot;https://cdn.jsdelivr.net/gh/Wittoy/cdn@latest/images/valine/高兴.png&quot;</span>,</span><br><span class="line">            尴尬: <span class="string">&quot;https://cdn.jsdelivr.net/gh/Wittoy/cdn@latest/images/valine/尴尬.png&quot;</span></span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>须注意的是，为了方便操作，最新版本格式上是CDN前缀+图片文件名的形式，你可以Ctrl + F搜索 <code>t.DEFAULT_EMOJI_CDN</code> 修改CDN地址或留空即可。这里我采用的即为留空方案。</p>
+<p>顺便提供下我自己修改后的 <a class="link"   href="https://cdn.jsdelivr.net/gh/Wittoy/cdn/icarus/js/Valine.min.js" >Valine.min.js<i class="fas fa-external-link-alt"></i></a>  ，以及 <a class="link"   href="https://github.com/xaoxuu/cdn-assets/tree/master/emoji" >表情资源<i class="fas fa-external-link-alt"></i></a></p>
+<h1 id="icarus主题引用"><a href="#icarus主题引用" class="headerlink" title="icarus主题引用"></a>icarus主题引用</h1><p>Icarus引用方法：下载 <a class="link"   href="https://raw.githubusercontent.com/ppoffice/hexo-component-inferno/master/src/view/comment/valine.jsx" >valine.jsx<i class="fas fa-external-link-alt"></i></a> 到hexo-theme-icarus/layout/comment后，修改内容如下</p>
+<figure class="highlight diff"><table><tr><td class="code"><pre><span class="line"><span class="deletion">- const &#123; cacheComponent &#125; = require(&#x27;../../util/cache&#x27;);</span></span><br><span class="line"><span class="addition">+ const &#123; cacheComponent &#125; = require(&#x27;hexo-component-inferno/lib/util/cache&#x27;);</span></span><br><span class="line"></span><br><span class="line"><span class="deletion">- jsUrl: helper.cdn(&#x27;valine&#x27;, &#x27;1.4.4&#x27;, &#x27;dist/Valine.min.js&#x27;)</span></span><br><span class="line"><span class="addition">+ jsUrl: helper.url_for(&#x27;js/Valine.min.js&#x27;)</span></span><br></pre></td></tr></table></figure>
+<p>然后把修改后的 Valine.min.js 丢至 hexo-theme-icarus/source/js</p>
+<hr>
+<p>以上内容转载并修改自</p>
+<ul>
+<li><a class="link"   href="https://cndrew.cn/2020/04/09/valinebq/" >Uncle_drew<i class="fas fa-external-link-alt"></i></a></li>
+<li><a class="link"   href="https://diary.dorcandy.cn/posts/916e8670" >喵窝･札记<i class="fas fa-external-link-alt"></i></a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>Valine</tag>
+        <tag>emoji</tag>
+        <tag>qqmail</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ward：一个简约美观多系统支持的云监控</title>
+    <url>/archives/ward/</url>
+    <content><![CDATA[<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>Ward是一个基于Java的简单且美观的服务器监视工具。支持暗色主题，多系统支持。<br>其中监控内容有CPU，内存使用，硬盘使用，服务器运行时间等等。</p>
+<a id="more"></a>
+<blockquote>
+<p>Ward is a simple and and minimalistic server monitoring tool. Ward supports adaptive design system. Also it supports dark theme. It shows only principal information and can be used, if you want to see nice looking dashboard instead looking on bunch of numbers and graphs. Ward works nice on all popular operating systems, because it uses OSHI.<br><a class="link"   href="https://github.com/B-Software/Ward#about" >https://github.com/B-Software/Ward#about<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<h1 id="安装方式"><a href="#安装方式" class="headerlink" title="安装方式"></a>安装方式</h1><h2 id="直接运行"><a href="#直接运行" class="headerlink" title="直接运行"></a>直接运行</h2><h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p><del>在<a class="link"   href="https://github.com/B-Software/Ward/releases" > GitHub Release <i class="fas fa-external-link-alt"></i></a>下载已编译好的 <code>jar</code> 包。</del><br>由于<a class="link"   href="https://github.com/B-Software/Ward/commit/140f51106355d58a1b241abcd32a5aa6cf80cbf7" >蒙古原因<i class="fas fa-external-link-alt"></i></a>，已不支持在 <code>GitHub Release</code> 页面下载。</p>
+<p>可<a class="link"   href="https://anak.coding.net/public-artifacts/ci/ward" >在此<i class="fas fa-external-link-alt"></i></a>下载自动编译的jar文件。</p>
+<h3 id="配置Java-JRE环境"><a href="#配置Java-JRE环境" class="headerlink" title="配置Java JRE环境"></a>配置Java JRE环境</h3><p>Debian JRE的安装步骤可参考我的 <a href="https://blog.wittoy.com/archives/debian10-openjdk/">这篇文章</a> 。<br>Windows的话只能去 <a href="https://www.oracle.com/java/technologies/javase-downloads.html"><del>万恶的Oracle</del></a> 下载了。</p>
+<h3 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h3><p>Linux：<code>java -jar ward*.jar</code><br>Windows：打开命令指示符(CMD)后，同样输入 <code>java -jar ward-版本号.jar</code></p>
+<p>成功运行后，访问 <a class="link"   href="http://127.0.0.1:4000/" >localhost:4000<i class="fas fa-external-link-alt"></i></a> 后自行配置，其中 <code>Application Port</code> 设置除 <code>4000</code> 外的自定义端口。<br>保存后访问你设置的自定义端口，即可食用。</p>
+<p>附: <code>Linux Systemd</code> 配置</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mkdir /opt/Ward</span><br><span class="line">mv ward*.jar /opt/Ward/</span><br><span class="line">cat &gt; /etc/systemd/system/ward.service &lt;&lt;<span class="string">EOF</span></span><br><span class="line"><span class="string">[Unit]</span></span><br><span class="line"><span class="string">Description=Ward</span></span><br><span class="line"><span class="string">After=network.target</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Service]</span></span><br><span class="line"><span class="string">WorkingDirectory=/opt/Ward</span></span><br><span class="line"><span class="string">ExecStart=/usr/bin/java -jar ward.jar</span></span><br><span class="line"><span class="string">Type=simple</span></span><br><span class="line"><span class="string">Restart=on-failure</span></span><br><span class="line"><span class="string">RestartSec=5</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Install]</span></span><br><span class="line"><span class="string">WantedBy=multi-user.target</span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
+<p>启动&amp;开机自启：</p>
+<p><code>systemctl start ward</code><br><code>systemctl enable ward</code></p>
+<h2 id="Docker构建运行"><a href="#Docker构建运行" class="headerlink" title="Docker构建运行"></a>Docker构建运行</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> -b /opt/Ward-Docker https://github.com/B-Software/Ward.git</span><br><span class="line"><span class="built_in">cd</span> /opt/Ward-Docker</span><br><span class="line">docker build --tag ward</span><br><span class="line">docker run --rm -it --name ward -p 4000:4000 -p &lt;自定义端口&gt;:&lt;自定义端口&gt; --privileged ward</span><br><span class="line"><span class="comment"># &lt;自定义端口&gt;中输入你将要访问的外网端口，如端口设置为5000：</span></span><br><span class="line"><span class="comment"># docker run --rm -it --name ward -p 4000:4000 -p 5000:5000 --privileged ward</span></span><br></pre></td></tr></table></figure>
+<p>访问 <a class="link"   href="http://127.0.0.1:4000/" >localhost:4000<i class="fas fa-external-link-alt"></i></a> 后，根据自己个人配置设置，其中 <code>Application Port</code> 设置成 <strong>刚才设置的自定义端口</strong> 。<br>保存后访问你设置的自定义端口，即可食用。</p>
+<h2 id="自行编译安装"><a href="#自行编译安装" class="headerlink" title="自行编译安装"></a>自行编译安装</h2><p>克隆项目后。在IDE等软件中即可自定义编译后运行。</p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>Ward</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>解决Windows10无法搜索已安装软件</title>
+    <url>/archives/win10-search/</url>
+    <content><![CDATA[<p>我们遇到什么Bug，也不要怕，微笑着面对他，消除阿三留下的💩的最好办法就是面对Bug，坚持，才是胜利，加油，奥利给！！！</p>
+<a id="more"></a>
+<hr>
+<p>软件安装后，大多都会在开始菜单中生成快捷方式，这样Windows Search便可以快捷地搜索到对应的软件。<br>然鹅，在1809过渡到2004后，在我心目中懒人必备的软件搜索不管用了（</p>
+<h1 id="坑1"><a href="#坑1" class="headerlink" title="坑1"></a>坑1</h1><p>索引选项中包含了「开始」 菜单，但就是搜索不到已安装的软件？<br>原因是默认索引选项包含的 “「开始」 菜单” 是 “李鬼” 。</p>
+<p>这里的「开始」 菜单 只是 <code>所有用户</code> 下的开始菜单，不包括 <code>个人用户</code> 的开始菜单。<br>Window 10对权限进行了改进，软件要想安装在 <code>所有用户</code> 下的话，必须要有管理员权限。</p>
+<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>很简单，在索引选项中添加个人用户下的开始菜单。</p>
+<p>索引选项 - 修改 - C盘 - 你的用户名 - AppData - Roaming - Microsoft Windows - 「开始」 菜单<br>确定保存即可。</p>
+<blockquote>
+<p>注：排除选项需取消AppData文件</p>
+</blockquote>
+<h1 id="坑2"><a href="#坑2" class="headerlink" title="坑2"></a>坑2</h1><p>保存了，重建索引依旧搜不到？</p>
+<p>原因：<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/90be9571-5b3b-48f4-aea8-a5a9bfdf15e2"
+                     
+                ><br>好家伙，还能这么玩.jpg</p>
+<h2 id="解决方法-1"><a href="#解决方法-1" class="headerlink" title="解决方法"></a>解决方法</h2><p>打开 <code>%APPDATA%\Microsoft\Windows</code></p>
+<p>对 <code>「开始」 菜单</code> 右键 - 属性 - 高级 - 存档和索引属性 - 除了文件属性外，还允许索引此文件夹中文件的内容<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/2b3b0b86-31c4-4415-ac08-5e63c1aa61cd"
+                     
+                ></p>
+<p>然后再重建索引，即可回归Windows Search(bushi)</p>
+]]></content>
+      <categories>
+        <category>Windows</category>
+      </categories>
+      <tags>
+        <tag>Windows Search</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Vercel(ZEIT)使用自定义404页面</title>
+    <url>/archives/zeit-404-page/</url>
+    <content><![CDATA[<p>在Vercel(ZEIT)平台托管的资源开启并使用自定义404页面</p>
+<a id="more"></a>
+<p>免费套餐默认内置的404页面是这样的</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/b0f304be-fd34-4c86-a755-20f3fd9e21b8"
+                     
+                ><br>虽然挺简洁明了，但是对用户没有帮助。特别是像Hexo之类的可以同主题一起渲染成更好康的404页面。</p>
+<p>下面通过修改now.json配置<del>和api routes</del>实现使用自定义404页面。</p>
+<blockquote>
+<p>特别一说 这功能咕了快有一年多了（<br><a class="link"   href="https://spectrum.chat/zeit/now/custom-404-page~1f921045-60d9-477b-b23c-1626c9fa1565" >https://spectrum.chat/zeit/now/custom-404-page~1f921045-60d9-477b-b23c-1626c9fa1565<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<hr>
+<h1 id="Now-v2-now-json"><a href="#Now-v2-now-json" class="headerlink" title="Now v2 now.json"></a>Now v2 now.json</h1><blockquote>
+<p><a class="link"   href="https://zeit.co/docs/configuration#routes/advanced/custom-404" >https://zeit.co/docs/configuration#routes/advanced/custom-404<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<p>Now2项目中，Vercel(ZEIT)采用根目录下的now.json文件配置来自定义其构建过程，可通过Routes进行重定向，指定页面，自定义404等功能。</p>
+<p>对于<code>filesystem</code>中不匹配的 返回处于根目录的 <code>404.html</code> 404错误页面文件</p>
+<figure class="highlight javascript"><figcaption><span>now.json</span></figcaption><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;version&quot;</span>: <span class="number">2</span>,</span><br><span class="line">  <span class="string">&quot;routes&quot;</span>: [</span><br><span class="line">    &#123; <span class="string">&quot;handle&quot;</span>: <span class="string">&quot;filesystem&quot;</span> &#125;,</span><br><span class="line">    &#123; <span class="string">&quot;src&quot;</span>: <span class="string">&quot;/(.*)&quot;</span>, <span class="string">&quot;status&quot;</span>: <span class="number">404</span>, <span class="string">&quot;dest&quot;</span>: <span class="string">&quot;/404.html&quot;</span> &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>hexo添加方式：<br>如果你采用的是Vercel(ZEIT) Page的话，只需在Hexo目录下的 <code>/source</code> 新建 <code>now.json</code> 并复制上述代码，<code>hexo g</code> 即可生成在 <code>/public</code>。<br>如果是托管代码自动部署的，则添加 <code>now.json</code> 在根目录即可。</p>
+<blockquote>
+<p>注：使用gulp压缩的最好忽略此文件，以避免出现奇怪的现象。</p>
+</blockquote>
+<p><del>实在懒得复制的直接<a href="/now.json">下载</a>我的配置也行。</del></p>
+<p>顺便也可以康下我的<a href="/404.html">404页面</a>（</p>
+<h1 id="Zero-Config"><a href="#Zero-Config" class="headerlink" title="Zero Config"></a><del>Zero Config</del></h1><p>以下是官方屁话</p>
+<blockquote>
+<p>With Now 2.0, we introduced the most powerful and scalable platform for static websites and serverless functions powered by any language or framework<br>This came at the expense of writing now.json files. Today, we are introducing Zero Config, a conventional and completely backwards-compatible approach to deployment.<br><a class="link"   href="https://zeit.co/blog/zero-config" >https://zeit.co/blog/zero-config<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<blockquote>
+<p>是的，官方又咕了<br><a class="link"   href="https://spectrum.chat/zeit/now/custom-404-page~1f921045-60d9-477b-b23c-1626c9fa1565?m=MTU4MDQyNzQ3OTI1Ng==" >https://spectrum.chat/zeit/now/custom-404-page~1f921045-60d9-477b-b23c-1626c9fa1565?m=MTU4MDQyNzQ3OTI1Ng==<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>ZEIT</tag>
+        <tag>404 page</tag>
+        <tag>vercel</tag>
+      </tags>
+  </entry>
+</search>
