@@ -214,6 +214,27 @@
       </tags>
   </entry>
   <entry>
+    <title>博客改动状况</title>
+    <url>/archives/blog-rewrite/</url>
+    <content><![CDATA[<p>Holy Shift</p>
+<a id="more"></a>
+<p>放假回来后，苦于<del>过于清闲</del>，顺手打理了下这玩意儿。</p>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1308819085&auto=0&height=66"></iframe>
+
+<h1 id="主题更新"><a href="#主题更新" class="headerlink" title="主题更新"></a>主题更新</h1><blockquote>
+<p>达成成就：一年换一个主题.jpg</p>
+</blockquote>
+<p>随便改了一天，虽然代码压缩以及全局cdn等优化，评论系统更换（丢数据*2）以及乱七八糟的个人元素（指好几把炫酷的特效）等还没加进去的玩意儿······<br>管他呢，上线了再说。（pjax真香，非jquery真香）</p>
+<h1 id="评论更新"><a href="#评论更新" class="headerlink" title="评论更新"></a>评论更新</h1><p>由于 <code>valine</code> 多年失修，<del>预计打算估计也许可能大概</del>换成 <code>waline</code> ，主要是 <code>valine</code> 的访客统计蛮香的，想继续保持。（代码都搬这个新主题来了）<br>初步了解了下大概，又是一个丢评论的冥场面（</p>
+<h1 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h1><p>放假这些天里，毕竟刚过完期末考试，人有点废（确实）<br>除了打游戏就睡觉。买了一堆diy产品（电子垃圾）苦于没工具在吃灰中。</p>
+<hr>
+<p>同元旦前夕的火车的错过，异地恋的终止，也许是新的开端。<br>希望过个好年.jpg</p>
+]]></content>
+      <categories>
+        <category>Daily</category>
+      </categories>
+  </entry>
+  <entry>
     <title>Avicii Hi-res (44.1Khz/24Bit,2015之后)专辑</title>
     <url>/archives/avicii/</url>
     <content><![CDATA[<p>R.I.P Avcii</p>
@@ -226,27 +247,6 @@
       <tags>
         <tag>Avicii</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>博客改动状况</title>
-    <url>/archives/blog-rewrite/</url>
-    <content><![CDATA[<p>Holy Shift</p>
-<a id="more"></a>
-<p>放假回来后，苦于<del>过于清闲</del>，顺手打理了下这玩意儿。</p>
-<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1308819085&auto=0&height=66"></iframe>
-
-<h1 id="主题更新"><a href="#主题更新" class="headerlink" title="主题更新"></a>主题更新</h1><blockquote>
-<p>达成成就：一年换一个主题.jpg</p>
-</blockquote>
-<p>随便改了一天，虽然代码压缩以及全局cdn等优化，评论系统更换（丢数据*2）以及乱七八糟的个人元素（指好几把炫酷的特效）等还没加进去的玩意儿······<br>管他呢，上线了再说。（pjax真香!）</p>
-<h1 id="评论更新"><a href="#评论更新" class="headerlink" title="评论更新"></a>评论更新</h1><p>由于 <code>valine</code> 多年失修，<del>预计打算估计也许可能大概</del>换成 <code>waline</code> ，主要是 <code>valine</code> 的访客统计蛮香的，想继续保持。（代码都搬这个新主题来了）<br>初步了解了下大概，又是一个丢评论的冥场面（</p>
-<h1 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h1><p>放假这些天里，毕竟刚过完期末考试，人有点废（确实）<br>除了打游戏就睡觉。买了一堆diy产品（电子垃圾）苦于没工具在吃灰中。</p>
-<hr>
-<p>同元旦前夕的火车的错过，异地恋的终止，也许是新的开端。<br>希望过个好年.jpg</p>
-]]></content>
-      <categories>
-        <category>Daily</category>
-      </categories>
   </entry>
   <entry>
     <title>利用OTG开启黑阈</title>
@@ -372,44 +372,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Debian 10(Buster)安装OpenJDK 8</title>
-    <url>/archives/debian10-openjdk/</url>
-    <content><![CDATA[<p>在Debian 10(Buster)安装openjdk-8-jdk/openjdk-8-jre</p>
-<a id="more"></a>
-<p>由于安全问题，Debian在Buster版本已不再支持直接通过 <code>apt-get</code> 安装 <code>openjdk-8-jdk</code> 以及 <code>openjdk-8-jre</code> 。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">Package openjdk-8-jdk-headless is not available, but is referred to by another package.</span><br><span class="line">This may mean that the package is missing, has been obsoleted, or</span><br><span class="line">is only available from another <span class="built_in">source</span></span><br><span class="line"></span><br><span class="line">E: Package <span class="string">&#x27;openjdk-8-jdk-headless&#x27;</span> has no installation candidate</span><br></pre></td></tr></table></figure>
-<p>这里通过2种方式来安装OpenJDK JDK/JRE 8。</p>
-<h1 id="SID源安装"><a href="#SID源安装" class="headerlink" title="SID源安装"></a>SID源安装</h1><p>以安装 <code>openjdk-8-jdk</code> 为例</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&quot;deb http://deb.debian.org/debian/ sid main&quot;</span> &gt;&gt; /etc/apt/sources.list</span><br><span class="line"></span><br><span class="line">apt-get update &amp;&amp; apt-get install -y openjdk-8-jdk</span><br></pre></td></tr></table></figure>
-<p>此方法简单粗暴，但会引用不稳定的deb安装包，请谨慎使用。</p>
-<blockquote>
-<p>或安装完jdk/jre后直接删除sid源（卸磨杀驴.jpg）</p>
-</blockquote>
-<h1 id="AdoptOpenJDK安装"><a href="#AdoptOpenJDK安装" class="headerlink" title="AdoptOpenJDK安装"></a>AdoptOpenJDK安装</h1><p>这里同样也采用deb包安装</p>
-<h2 id="安装所需依赖"><a href="#安装所需依赖" class="headerlink" title="安装所需依赖"></a>安装所需依赖</h2><p><code>apt-get update &amp;&amp; apt-get install -y apt-transport-https software-properties-common ca-certificates lsb-release wget dirmngr gnupg</code></p>
-<h2 id="添加-AdoptOpenJDK-GPG"><a href="#添加-AdoptOpenJDK-GPG" class="headerlink" title="添加 AdoptOpenJDK GPG"></a>添加 AdoptOpenJDK GPG</h2><p><code>wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -</code></p>
-<h2 id="添加-AdoptOpenJDK-官方仓库"><a href="#添加-AdoptOpenJDK-官方仓库" class="headerlink" title="添加 AdoptOpenJDK 官方仓库"></a>添加 AdoptOpenJDK 官方仓库</h2><p><code>add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/</code></p>
-<blockquote>
-<p>若出现<code>-bash: add-apt-repository: command not found</code> 请检查是否成功安装所需依赖。</p>
-</blockquote>
-<h2 id="安装所需包"><a href="#安装所需包" class="headerlink" title="安装所需包"></a>安装所需包</h2><p>执行 <code>apt-get update</code> 后</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#安装OpenJDK 8 JDK</span></span><br><span class="line">apt-get install adoptopenjdk-8-hotspot</span><br><span class="line"></span><br><span class="line"><span class="comment">#安装OpenJDK 8 JRE</span></span><br><span class="line">apt-get install adoptopenjdk-8-hotspot-jre</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>官方教程<br><a class="link"   href="https://adoptopenjdk.net/installation.html?variant=openjdk8&amp;jvmVariant=hotspot#linux-pkg" >https://adoptopenjdk.net/installation.html?variant=openjdk8&amp;jvmVariant=hotspot#linux-pkg<i class="fas fa-external-link-alt"></i></a><br>参考自<br><a class="link"   href="https://stackoverflow.com/questions/57031649/how-to-install-openjdk-8-jdk-on-debian-10-buster" >https://stackoverflow.com/questions/57031649/how-to-install-openjdk-8-jdk-on-debian-10-buster<i class="fas fa-external-link-alt"></i></a></p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-      <tags>
-        <tag>OpenJDK</tag>
-        <tag>Debian 10</tag>
-        <tag>JRE</tag>
-        <tag>JDK</tag>
-        <tag>AdoptOpenJDK</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Coding文件网盘实现图床与文件直链下载</title>
     <url>/archives/coding-netdisk/</url>
     <content><![CDATA[<p>Coding团队版无限空间文件网盘，实现文件高速直链下载与图床程序。</p>
@@ -485,6 +447,44 @@
         <tag>Coding</tag>
         <tag>网盘</tag>
         <tag>图床</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Debian 10(Buster)安装OpenJDK 8</title>
+    <url>/archives/debian10-openjdk/</url>
+    <content><![CDATA[<p>在Debian 10(Buster)安装openjdk-8-jdk/openjdk-8-jre</p>
+<a id="more"></a>
+<p>由于安全问题，Debian在Buster版本已不再支持直接通过 <code>apt-get</code> 安装 <code>openjdk-8-jdk</code> 以及 <code>openjdk-8-jre</code> 。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">Package openjdk-8-jdk-headless is not available, but is referred to by another package.</span><br><span class="line">This may mean that the package is missing, has been obsoleted, or</span><br><span class="line">is only available from another <span class="built_in">source</span></span><br><span class="line"></span><br><span class="line">E: Package <span class="string">&#x27;openjdk-8-jdk-headless&#x27;</span> has no installation candidate</span><br></pre></td></tr></table></figure>
+<p>这里通过2种方式来安装OpenJDK JDK/JRE 8。</p>
+<h1 id="SID源安装"><a href="#SID源安装" class="headerlink" title="SID源安装"></a>SID源安装</h1><p>以安装 <code>openjdk-8-jdk</code> 为例</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&quot;deb http://deb.debian.org/debian/ sid main&quot;</span> &gt;&gt; /etc/apt/sources.list</span><br><span class="line"></span><br><span class="line">apt-get update &amp;&amp; apt-get install -y openjdk-8-jdk</span><br></pre></td></tr></table></figure>
+<p>此方法简单粗暴，但会引用不稳定的deb安装包，请谨慎使用。</p>
+<blockquote>
+<p>或安装完jdk/jre后直接删除sid源（卸磨杀驴.jpg）</p>
+</blockquote>
+<h1 id="AdoptOpenJDK安装"><a href="#AdoptOpenJDK安装" class="headerlink" title="AdoptOpenJDK安装"></a>AdoptOpenJDK安装</h1><p>这里同样也采用deb包安装</p>
+<h2 id="安装所需依赖"><a href="#安装所需依赖" class="headerlink" title="安装所需依赖"></a>安装所需依赖</h2><p><code>apt-get update &amp;&amp; apt-get install -y apt-transport-https software-properties-common ca-certificates lsb-release wget dirmngr gnupg</code></p>
+<h2 id="添加-AdoptOpenJDK-GPG"><a href="#添加-AdoptOpenJDK-GPG" class="headerlink" title="添加 AdoptOpenJDK GPG"></a>添加 AdoptOpenJDK GPG</h2><p><code>wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -</code></p>
+<h2 id="添加-AdoptOpenJDK-官方仓库"><a href="#添加-AdoptOpenJDK-官方仓库" class="headerlink" title="添加 AdoptOpenJDK 官方仓库"></a>添加 AdoptOpenJDK 官方仓库</h2><p><code>add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/</code></p>
+<blockquote>
+<p>若出现<code>-bash: add-apt-repository: command not found</code> 请检查是否成功安装所需依赖。</p>
+</blockquote>
+<h2 id="安装所需包"><a href="#安装所需包" class="headerlink" title="安装所需包"></a>安装所需包</h2><p>执行 <code>apt-get update</code> 后</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#安装OpenJDK 8 JDK</span></span><br><span class="line">apt-get install adoptopenjdk-8-hotspot</span><br><span class="line"></span><br><span class="line"><span class="comment">#安装OpenJDK 8 JRE</span></span><br><span class="line">apt-get install adoptopenjdk-8-hotspot-jre</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>官方教程<br><a class="link"   href="https://adoptopenjdk.net/installation.html?variant=openjdk8&amp;jvmVariant=hotspot#linux-pkg" >https://adoptopenjdk.net/installation.html?variant=openjdk8&amp;jvmVariant=hotspot#linux-pkg<i class="fas fa-external-link-alt"></i></a><br>参考自<br><a class="link"   href="https://stackoverflow.com/questions/57031649/how-to-install-openjdk-8-jdk-on-debian-10-buster" >https://stackoverflow.com/questions/57031649/how-to-install-openjdk-8-jdk-on-debian-10-buster<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>OpenJDK</tag>
+        <tag>Debian 10</tag>
+        <tag>JRE</tag>
+        <tag>JDK</tag>
+        <tag>AdoptOpenJDK</tag>
       </tags>
   </entry>
   <entry>
