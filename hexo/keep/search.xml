@@ -1,6 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Hexo优化AdSense代码加速整站</title>
+    <url>/archives/adsense-optimization/</url>
+    <content><![CDATA[<p>为Hexo icarus主题优化AdSense代码</p>
+<a id="more"></a>
+<h1 id="减少AdSense的JS请求"><a href="#减少AdSense的JS请求" class="headerlink" title="减少AdSense的JS请求"></a>减少AdSense的JS请求</h1><p>谷歌官方的代码</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&lt;script <span class="keyword">async</span> src=<span class="string">&quot;https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;</span>&gt;&lt;/script&gt;</span><br><span class="line">&lt;ins <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;adsbygoogle&quot;</span></span><br><span class="line">     style=<span class="string">&quot;display:block&quot;</span></span><br><span class="line">     data-ad-client=<span class="string">&quot;ca-pub-id&quot;</span></span><br><span class="line">     data-ad-slot=<span class="string">&quot;id&quot;</span></span><br><span class="line">     data-ad-format=<span class="string">&quot;auto&quot;</span></span><br><span class="line">     data-full-width-responsive=<span class="string">&quot;true&quot;</span>&gt;&lt;/ins&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">     (adsbygoogle = <span class="built_in">window</span>.adsbygoogle || []).push(&#123;&#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>分解一下，首先通过async异步请求加载adsbygoogle.js核心文件，待加载完成后再push到ins内，显示广告内容。</p>
+<p>当我们需要放入广告位时，就将该段代码放入。可是如果有多个广告位的时候，就会引用多个相同的JS。</p>
+<blockquote>
+<p>Q：如果我的网页上有多个广告单元，我是否要为每个广告单元添加  <code>&lt;script async src=&quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;&gt;&lt;/script&gt;</code></p>
+<p>A：不，不需要，adsbygoogle.js 可以一次性加载。</p>
+</blockquote>
+<p>上述是谷歌官方给的QA，由此可知我们不需要多次加载JS</p>
+<p>如果你有多个广告位，那就可以把该段引入JS的代码，放到<code>&lt;head&gt;</code>里，既可以达到一次载入JS，所有<code>&lt;ins&gt;</code>都可以接到广告。</p>
+<h1 id="JS监听加载"><a href="#JS监听加载" class="headerlink" title="JS监听加载"></a>JS监听加载</h1><p>将代码改为如下</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line"><span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">                <span class="keyword">let</span> script = <span class="built_in">document</span>.createElement(<span class="string">&quot;script&quot;</span>);</span><br><span class="line">                script.setAttribute(<span class="string">&quot;async&quot;</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">                script.src = <span class="string">&quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;</span>;</span><br><span class="line">                <span class="built_in">document</span>.body.appendChild(script);</span><br><span class="line">        &#125;, <span class="number">2e3</span>);</span><br><span class="line">&#125;</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>Hexo icarus v3.0则修改成</p>
+<figure class="highlight js"><figcaption><span>head.jsx</span></figcaption><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> adjs = <span class="string">`window.onload = function() &#123;</span></span><br><span class="line"><span class="string">            setTimeout(function() &#123;</span></span><br><span class="line"><span class="string">                let script = document.createElement(&quot;script&quot;);</span></span><br><span class="line"><span class="string">                script.setAttribute(&quot;async&quot;, &quot;&quot;);</span></span><br><span class="line"><span class="string">                script.src = &quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;;</span></span><br><span class="line"><span class="string">                document.body.appendChild(script);</span></span><br><span class="line"><span class="string">            &#125;, 2e3);&#125;`</span>;</span><br><span class="line"></span><br><span class="line">&#123;adsenseClientId ? <span class="xml"><span class="tag">&lt;<span class="name">script</span> <span class="attr">dangerouslySetInnerHTML</span>=<span class="string">&#123;&#123;</span> <span class="attr">__html:</span> <span class="attr">adjs</span> &#125;&#125;&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span> : <span class="literal">null</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>转载自<a class="link"   href="https://51shenyun.cn/adsense_super/" >ShenYun<i class="fas fa-external-link-alt"></i></a>，<a class="link"   href="https://www.pearik.com/archives/adsense-optimization" >篱落闲栈<i class="fas fa-external-link-alt"></i></a>。</p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>AdSense</tag>
+        <tag>Icarus</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ADGuard Home：自建去广告的安全DNS服务器</title>
     <url>/archives/adguard-home/</url>
     <content><![CDATA[<p>在VPS上安装ADGuard Home，自建无广告，采用DoH/DoT协议的安全 DNS 服务器</p>
@@ -131,37 +162,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Hexo优化AdSense代码加速整站</title>
-    <url>/archives/adsense-optimization/</url>
-    <content><![CDATA[<p>为Hexo icarus主题优化AdSense代码</p>
-<a id="more"></a>
-<h1 id="减少AdSense的JS请求"><a href="#减少AdSense的JS请求" class="headerlink" title="减少AdSense的JS请求"></a>减少AdSense的JS请求</h1><p>谷歌官方的代码</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&lt;script <span class="keyword">async</span> src=<span class="string">&quot;https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;</span>&gt;&lt;/script&gt;</span><br><span class="line">&lt;ins <span class="class"><span class="keyword">class</span></span>=<span class="string">&quot;adsbygoogle&quot;</span></span><br><span class="line">     style=<span class="string">&quot;display:block&quot;</span></span><br><span class="line">     data-ad-client=<span class="string">&quot;ca-pub-id&quot;</span></span><br><span class="line">     data-ad-slot=<span class="string">&quot;id&quot;</span></span><br><span class="line">     data-ad-format=<span class="string">&quot;auto&quot;</span></span><br><span class="line">     data-full-width-responsive=<span class="string">&quot;true&quot;</span>&gt;&lt;/ins&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line">     (adsbygoogle = <span class="built_in">window</span>.adsbygoogle || []).push(&#123;&#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
-<p>分解一下，首先通过async异步请求加载adsbygoogle.js核心文件，待加载完成后再push到ins内，显示广告内容。</p>
-<p>当我们需要放入广告位时，就将该段代码放入。可是如果有多个广告位的时候，就会引用多个相同的JS。</p>
-<blockquote>
-<p>Q：如果我的网页上有多个广告单元，我是否要为每个广告单元添加  <code>&lt;script async src=&quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;&gt;&lt;/script&gt;</code></p>
-<p>A：不，不需要，adsbygoogle.js 可以一次性加载。</p>
-</blockquote>
-<p>上述是谷歌官方给的QA，由此可知我们不需要多次加载JS</p>
-<p>如果你有多个广告位，那就可以把该段引入JS的代码，放到<code>&lt;head&gt;</code>里，既可以达到一次载入JS，所有<code>&lt;ins&gt;</code>都可以接到广告。</p>
-<h1 id="JS监听加载"><a href="#JS监听加载" class="headerlink" title="JS监听加载"></a>JS监听加载</h1><p>将代码改为如下</p>
-<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line"><span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">setTimeout</span>(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">                <span class="keyword">let</span> script = <span class="built_in">document</span>.createElement(<span class="string">&quot;script&quot;</span>);</span><br><span class="line">                script.setAttribute(<span class="string">&quot;async&quot;</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">                script.src = <span class="string">&quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;</span>;</span><br><span class="line">                <span class="built_in">document</span>.body.appendChild(script);</span><br><span class="line">        &#125;, <span class="number">2e3</span>);</span><br><span class="line">&#125;</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
-<p>Hexo icarus v3.0则修改成</p>
-<figure class="highlight js"><figcaption><span>head.jsx</span></figcaption><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> adjs = <span class="string">`window.onload = function() &#123;</span></span><br><span class="line"><span class="string">            setTimeout(function() &#123;</span></span><br><span class="line"><span class="string">                let script = document.createElement(&quot;script&quot;);</span></span><br><span class="line"><span class="string">                script.setAttribute(&quot;async&quot;, &quot;&quot;);</span></span><br><span class="line"><span class="string">                script.src = &quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;;</span></span><br><span class="line"><span class="string">                document.body.appendChild(script);</span></span><br><span class="line"><span class="string">            &#125;, 2e3);&#125;`</span>;</span><br><span class="line"></span><br><span class="line">&#123;adsenseClientId ? <span class="xml"><span class="tag">&lt;<span class="name">script</span> <span class="attr">dangerouslySetInnerHTML</span>=<span class="string">&#123;&#123;</span> <span class="attr">__html:</span> <span class="attr">adjs</span> &#125;&#125;&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span> : <span class="literal">null</span>&#125;</span><br></pre></td></tr></table></figure>
-
-<p>转载自<a class="link"   href="https://51shenyun.cn/adsense_super/" >ShenYun<i class="fas fa-external-link-alt"></i></a>，<a class="link"   href="https://www.pearik.com/archives/adsense-optimization" >篱落闲栈<i class="fas fa-external-link-alt"></i></a>。</p>
-]]></content>
-      <categories>
-        <category>WebSite</category>
-      </categories>
-      <tags>
-        <tag>Hexo</tag>
-        <tag>AdSense</tag>
-        <tag>Icarus</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>安卓端实用运维软件</title>
     <url>/archives/android-tools/</url>
     <content><![CDATA[<p>删库从入门到跨平台（</p>
@@ -228,27 +228,6 @@
       </tags>
   </entry>
   <entry>
-    <title>博客改动状况</title>
-    <url>/archives/blog-rewrite/</url>
-    <content><![CDATA[<p>Holy Shift</p>
-<a id="more"></a>
-<p>放假回来后，苦于<del>过于清闲</del>，顺手打理了下这玩意儿。</p>
-<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1308819085&auto=0&height=66"></iframe>
-
-<h1 id="主题更新"><a href="#主题更新" class="headerlink" title="主题更新"></a>主题更新</h1><blockquote>
-<p>达成成就：一年换一个主题.jpg</p>
-</blockquote>
-<p>随便改了一天，虽然代码压缩以及全局cdn等优化，评论系统更换（丢数据*2）以及乱七八糟的个人元素（指好几把炫酷的特效）等还没加进去的玩意儿······<br>管他呢，上线了再说。（pjax真香，非jquery真香）</p>
-<h1 id="评论更新"><a href="#评论更新" class="headerlink" title="评论更新"></a>评论更新</h1><p>由于 <code>valine</code> 多年失修，<del>预计打算估计也许可能大概</del>换成 <code>waline</code> ，主要是 <code>valine</code> 的访客统计蛮香的，想继续保持。（代码都搬这个新主题来了）<br>初步了解了下大概，又是一个丢评论的冥场面（</p>
-<h1 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h1><p>放假这些天里，毕竟刚过完期末考试，人有点废（确实）<br>除了打游戏就睡觉。买了一堆diy产品（电子垃圾）苦于没工具在吃灰中。</p>
-<hr>
-<p>同元旦前夕的火车的错过，异地恋的终止，也许是新的开端。<br>希望过个好年.jpg</p>
-]]></content>
-      <categories>
-        <category>Daily</category>
-      </categories>
-  </entry>
-  <entry>
     <title>利用OTG开启黑阈</title>
     <url>/archives/brevent/</url>
     <content><![CDATA[<p>已ROOT安卓手机给未ROOT安卓手机开启黒域</p>
@@ -278,6 +257,38 @@
         <tag>OTG</tag>
         <tag>Brevent</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>博客改动状况</title>
+    <url>/archives/blog-rewrite/</url>
+    <content><![CDATA[<p>Holy Shift</p>
+<a id="more"></a>
+<p>放假回来后，苦于<del>过于清闲</del>，顺手打理了下这玩意儿。</p>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1308819085&auto=0&height=66"></iframe>
+
+<h1 id="主题更新"><a href="#主题更新" class="headerlink" title="主题更新"></a>主题更新</h1><blockquote>
+<p>达成成就：一年换一个主题.jpg</p>
+</blockquote>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/471b7639-ace7-4dd6-868d-1fefa650de49"
+                      alt="2020 Blog Commit"
+                ></p>
+<p>随便改了两天，改的差不多了，就字体和图标等个性方面没搞（咕咕咕），还有SEO还有尚未完善的地方。又不是不能用，管那么多干嘛，上线了再说。<br>摆脱了JQuery真香，Pjax香炸（就某些页面兼容有点问题）</p>
+<p>目前博客使用全局CDN+代码压缩，速度勉强能看在眼里。</p>
+<h1 id="评论更新"><a href="#评论更新" class="headerlink" title="评论更新"></a>评论更新</h1><p>由于 <code>Valine</code> 多年失修，于是换成了 <code>Waline</code> ，主要是 <code>Valine</code> 的访客统计蛮香的，想继续用这套方案。（代码都搬这个新主题来了）</p>
+<p><del>初步了解了下大概，又是一个丢评论的冥场面（</del><br>补救过来了，原因就一个 <code>/</code> 的问题.jpg<br>但还是删了蛮多评论才知道问题的所在（</p>
+<p>至于 <code>Waline Server</code> 的选择，在 <code>Vercel</code> “裸连” <code>TTFB</code> 甚至高达 <code>11451.4ms</code> 的情况下，面对十万甚至九万倍的反向优化，无奈选择麻花家最近新出的 <code>CloudBase</code>。<br>然后就掉坑里了，只能怪自己蠢，不能怪人家文档多年失修了（误）</p>
+<blockquote>
+<p>AWS AGA: 南方奠信？带不起带不起.jpg</p>
+</blockquote>
+<h1 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h1><p>放假这些天里，毕竟刚过完期末考试，人有点废（确实）<br>除了打游戏就睡觉。买了一堆diy产品（电子垃圾）苦于没工具在吃灰中。</p>
+<p>预计能上台面的活有：年轻人的第一把客制化键盘（7702年后）</p>
+]]></content>
+      <categories>
+        <category>Daily</category>
+      </categories>
   </entry>
   <entry>
     <title>CloudFlare Spectrum SSH转发加速</title>
@@ -326,84 +337,6 @@
         <tag>ssh</tag>
         <tag>CloudFlare</tag>
         <tag>CloudFlare Spectrum</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Coding文件网盘实现图床与文件直链下载</title>
-    <url>/archives/coding-netdisk/</url>
-    <content><![CDATA[<p>Coding团队版无限空间文件网盘，实现文件高速直链下载与图床程序。</p>
-<a id="more"></a>
-<p>这篇文章咕了快有3个月了。起因还是某位傻逼网友 <a href="https://ronnie.top/"><code>@Ronnie</code></a> 在用Coding搭博客时发现的新功能，然后就折腾出了这个玩法<br>本文达成成就：Coding运营上门（Doge）</p>
-<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>腾讯云开发者平台(Tencent Dev)改版成Coding团队版后，在每个仓库都自带了文件网盘功能。以下是官方介绍：</p>
-<blockquote>
-<p>文件网盘是一个可协作对网盘，用于存储项目内各式各样的文件资料，兼容上传所有的文件格式，助力团队内的高效协作。不仅如此，CODING 文件网盘还支持对文件历史版本的记录与回溯，方便团队对项目资料整体进行版本管理与质量把控。除此，在网盘内还能够预览部分格式的文件，高效定位高频文档。<br><a class="link"   href="https://help.coding.net/docs/management/files.html" >帮助中心<i class="fas fa-external-link-alt"></i></a></p>
-</blockquote>
-<p>简单来说就是： 支持上传文件大小不超过 <code>300 M</code>（反正我测试超过250M传不了.jpg），支持文件公开分享链接并可设置密码（不超过100M），支持文件历史版本记录与回溯。</p>
-<p>合理利用的话，理论上就是个<del>无限存储高速网盘。</del>（本人电信200M实测跑满宽带）</p>
-<p>根据评论区反馈，单仓库大小现已限制30G且文件外链分享限制100M以下。</p>
-<h1 id="上传"><a href="#上传" class="headerlink" title="上传"></a>上传</h1><h2 id="创建项目"><a href="#创建项目" class="headerlink" title="创建项目"></a>创建项目</h2><p>首先需要一个Coding团队版账号（<br>在Coding中新建一个项目，模板，项目名称随意。</p>
-<h2 id="开启功能"><a href="#开启功能" class="headerlink" title="开启功能"></a>开启功能</h2><p>理论上项目默认是不开启文件网盘功能的。<br>在你创建的项目中依次打开【项目设置】-&gt;【项目与成员】-&gt;【功能开关】-&gt;【文件网盘】<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://anak.coding.net/api/share/image/90624828-c66a-46fa-9e34-e63b1fe9782b"
-                     
-                ></p>
-<blockquote>
-<p>需要注意的是，团队成员是否有调整与使用该功能的权限。</p>
-</blockquote>
-<h2 id="上传文件"><a href="#上传文件" class="headerlink" title="上传文件"></a>上传文件</h2><p>在项目的左栏依次打开【文档管理】-&gt;【文件网盘】-&gt;【全部文件】后，点击上传文件或者直接拖拽文件即可上传文件。<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://anak.coding.net/api/share/image/22061be4-0915-485d-974b-5ebc9b84af72"
-                     
-                ></p>
-<h2 id="分享文件"><a href="#分享文件" class="headerlink" title="分享文件"></a>分享文件</h2><p>在你上传的文件点击分享按钮并开启分享。<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://anak.coding.net/api/share/image/cf3fd604-6942-4d26-92f7-47769871bc6e"
-                     
-                ><br>开启后会得到一个公开链接以及访问密码。<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://anak.coding.net/api/share/image/97b2e189-8160-4aa7-9026-b518dae968c9"
-                     
-                ></p>
-<h1 id="直链获取"><a href="#直链获取" class="headerlink" title="直链获取"></a>直链获取</h1><p>这里说下链接的组成结构。<br>如上图所示，文件分享后都得到一个随机的文件ID，形成的文件ID在对文件的每一次修改（文件标题或文件内容的修改）都不会失效。以下是链接组成成分：</p>
-<h2 id="文件直链"><a href="#文件直链" class="headerlink" title="文件直链"></a>文件直链</h2><p>文件预览地址为<br><code>https://团队ID.coding.net/s/文件ID</code><br>而下载直链则为<br><code>https://团队ID.coding.net/api/share/download/文件ID</code><br>直接引用下载直链即可享受高速下载，且无其他限制。</p>
-<blockquote>
-<p>示例（Android微信）<br>预览：<a href="https://anak.coding.net/s/971f1c6c-4d32-483d-a5a0-422b5ca8862c"><code>https://anak.coding.net/s/971f1c6c-4d32-483d-a5a0-422b5ca8862c</code></a><br>直链链接：<a href="https://anak.coding.net/api/share/download/971f1c6c-4d32-483d-a5a0-422b5ca8862c"><code>https://anak.coding.net/api/share/download/971f1c6c-4d32-483d-a5a0-422b5ca8862c</code></a></p>
-</blockquote>
-<h2 id="图片直链"><a href="#图片直链" class="headerlink" title="图片直链"></a>图片直链</h2><p>图片分享的预览地址与文件一致，都为<br><code>https://团队ID.coding.net/s/文件ID</code><br>而图片直链则为<br><code>https://团队ID.coding.net/api/share/image/文件ID</code><br>点击会跳转到 <code>coding-net-production-file-ci.codehub.cn</code> 开头的域名，即为图片文件CDN地址。</p>
-<blockquote>
-<p>示例（图片）<br>预览：<a href="https://anak.coding.net/s/329bd27a-5ef4-4fce-89f1-a139c926dcfd"><code>https://anak.coding.net/s/329bd27a-5ef4-4fce-89f1-a139c926dcfd</code></a><br>直链API：<a href="https://anak.coding.net/api/share/image/329bd27a-5ef4-4fce-89f1-a139c926dcfd"><code>https://anak.coding.net/api/share/image/329bd27a-5ef4-4fce-89f1-a139c926dcfd</code></a></p>
-</blockquote>
-<h2 id="速度"><a href="#速度" class="headerlink" title="速度"></a>速度</h2><p>文件直链/图片预览的API均为上海腾讯云，在全国速度不错。<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://anak.coding.net/api/share/image/b6dce465-6882-4722-851e-b4a050a4e631"
-                      alt="仅供参考"
-                ></p>
-<p>图片直链则使用全国腾讯云CDN加速。国内速度极佳。<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://anak.coding.net/api/share/image/ed314971-a6cf-4e8f-99f5-8cd4036732c8"
-                      alt="仅供参考"
-                ></p>
-<h1 id="后续"><a href="#后续" class="headerlink" title="后续"></a>后续</h1><p>虽然我感觉最近Coding的操作挺纳闷的，但功能方面是真香.jpg<br>我也询问过Coding客服，目前他们打算放出文件网盘API Wiki，有能力的大佬也可以自行写一个上传分享接口程序（在写了 0%）。</p>
-<p>最后</p>
-<ul>
-<li>请勿上传法律禁止文件</li>
-<li>请勿存放重要文件</li>
-<li>请合理使用该服务</li>
-</ul>
-]]></content>
-      <categories>
-        <category>WebSite</category>
-      </categories>
-      <tags>
-        <tag>Coding</tag>
-        <tag>网盘</tag>
-        <tag>图床</tag>
       </tags>
   </entry>
   <entry>
@@ -485,6 +418,84 @@
         <tag>JRE</tag>
         <tag>JDK</tag>
         <tag>AdoptOpenJDK</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Coding文件网盘实现图床与文件直链下载</title>
+    <url>/archives/coding-netdisk/</url>
+    <content><![CDATA[<p>Coding团队版无限空间文件网盘，实现文件高速直链下载与图床程序。</p>
+<a id="more"></a>
+<p>这篇文章咕了快有3个月了。起因还是某位傻逼网友 <a href="https://ronnie.top/"><code>@Ronnie</code></a> 在用Coding搭博客时发现的新功能，然后就折腾出了这个玩法<br>本文达成成就：Coding运营上门（Doge）</p>
+<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>腾讯云开发者平台(Tencent Dev)改版成Coding团队版后，在每个仓库都自带了文件网盘功能。以下是官方介绍：</p>
+<blockquote>
+<p>文件网盘是一个可协作对网盘，用于存储项目内各式各样的文件资料，兼容上传所有的文件格式，助力团队内的高效协作。不仅如此，CODING 文件网盘还支持对文件历史版本的记录与回溯，方便团队对项目资料整体进行版本管理与质量把控。除此，在网盘内还能够预览部分格式的文件，高效定位高频文档。<br><a class="link"   href="https://help.coding.net/docs/management/files.html" >帮助中心<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<p>简单来说就是： 支持上传文件大小不超过 <code>300 M</code>（反正我测试超过250M传不了.jpg），支持文件公开分享链接并可设置密码（不超过100M），支持文件历史版本记录与回溯。</p>
+<p>合理利用的话，理论上就是个<del>无限存储高速网盘。</del>（本人电信200M实测跑满宽带）</p>
+<p>根据评论区反馈，单仓库大小现已限制30G且文件外链分享限制100M以下。</p>
+<h1 id="上传"><a href="#上传" class="headerlink" title="上传"></a>上传</h1><h2 id="创建项目"><a href="#创建项目" class="headerlink" title="创建项目"></a>创建项目</h2><p>首先需要一个Coding团队版账号（<br>在Coding中新建一个项目，模板，项目名称随意。</p>
+<h2 id="开启功能"><a href="#开启功能" class="headerlink" title="开启功能"></a>开启功能</h2><p>理论上项目默认是不开启文件网盘功能的。<br>在你创建的项目中依次打开【项目设置】-&gt;【项目与成员】-&gt;【功能开关】-&gt;【文件网盘】<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/90624828-c66a-46fa-9e34-e63b1fe9782b"
+                     
+                ></p>
+<blockquote>
+<p>需要注意的是，团队成员是否有调整与使用该功能的权限。</p>
+</blockquote>
+<h2 id="上传文件"><a href="#上传文件" class="headerlink" title="上传文件"></a>上传文件</h2><p>在项目的左栏依次打开【文档管理】-&gt;【文件网盘】-&gt;【全部文件】后，点击上传文件或者直接拖拽文件即可上传文件。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/22061be4-0915-485d-974b-5ebc9b84af72"
+                     
+                ></p>
+<h2 id="分享文件"><a href="#分享文件" class="headerlink" title="分享文件"></a>分享文件</h2><p>在你上传的文件点击分享按钮并开启分享。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/cf3fd604-6942-4d26-92f7-47769871bc6e"
+                     
+                ><br>开启后会得到一个公开链接以及访问密码。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/97b2e189-8160-4aa7-9026-b518dae968c9"
+                     
+                ></p>
+<h1 id="直链获取"><a href="#直链获取" class="headerlink" title="直链获取"></a>直链获取</h1><p>这里说下链接的组成结构。<br>如上图所示，文件分享后都得到一个随机的文件ID，形成的文件ID在对文件的每一次修改（文件标题或文件内容的修改）都不会失效。以下是链接组成成分：</p>
+<h2 id="文件直链"><a href="#文件直链" class="headerlink" title="文件直链"></a>文件直链</h2><p>文件预览地址为<br><code>https://团队ID.coding.net/s/文件ID</code><br>而下载直链则为<br><code>https://团队ID.coding.net/api/share/download/文件ID</code><br>直接引用下载直链即可享受高速下载，且无其他限制。</p>
+<blockquote>
+<p>示例（Android微信）<br>预览：<a href="https://anak.coding.net/s/971f1c6c-4d32-483d-a5a0-422b5ca8862c"><code>https://anak.coding.net/s/971f1c6c-4d32-483d-a5a0-422b5ca8862c</code></a><br>直链链接：<a href="https://anak.coding.net/api/share/download/971f1c6c-4d32-483d-a5a0-422b5ca8862c"><code>https://anak.coding.net/api/share/download/971f1c6c-4d32-483d-a5a0-422b5ca8862c</code></a></p>
+</blockquote>
+<h2 id="图片直链"><a href="#图片直链" class="headerlink" title="图片直链"></a>图片直链</h2><p>图片分享的预览地址与文件一致，都为<br><code>https://团队ID.coding.net/s/文件ID</code><br>而图片直链则为<br><code>https://团队ID.coding.net/api/share/image/文件ID</code><br>点击会跳转到 <code>coding-net-production-file-ci.codehub.cn</code> 开头的域名，即为图片文件CDN地址。</p>
+<blockquote>
+<p>示例（图片）<br>预览：<a href="https://anak.coding.net/s/329bd27a-5ef4-4fce-89f1-a139c926dcfd"><code>https://anak.coding.net/s/329bd27a-5ef4-4fce-89f1-a139c926dcfd</code></a><br>直链API：<a href="https://anak.coding.net/api/share/image/329bd27a-5ef4-4fce-89f1-a139c926dcfd"><code>https://anak.coding.net/api/share/image/329bd27a-5ef4-4fce-89f1-a139c926dcfd</code></a></p>
+</blockquote>
+<h2 id="速度"><a href="#速度" class="headerlink" title="速度"></a>速度</h2><p>文件直链/图片预览的API均为上海腾讯云，在全国速度不错。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/b6dce465-6882-4722-851e-b4a050a4e631"
+                      alt="仅供参考"
+                ></p>
+<p>图片直链则使用全国腾讯云CDN加速。国内速度极佳。<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/ed314971-a6cf-4e8f-99f5-8cd4036732c8"
+                      alt="仅供参考"
+                ></p>
+<h1 id="后续"><a href="#后续" class="headerlink" title="后续"></a>后续</h1><p>虽然我感觉最近Coding的操作挺纳闷的，但功能方面是真香.jpg<br>我也询问过Coding客服，目前他们打算放出文件网盘API Wiki，有能力的大佬也可以自行写一个上传分享接口程序（在写了 0%）。</p>
+<p>最后</p>
+<ul>
+<li>请勿上传法律禁止文件</li>
+<li>请勿存放重要文件</li>
+<li>请合理使用该服务</li>
+</ul>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>Coding</tag>
+        <tag>网盘</tag>
+        <tag>图床</tag>
       </tags>
   </entry>
   <entry>
@@ -789,13 +800,13 @@
 <p>This package depends on the latest Linux kernel and modules for use on Amazon EC2, Google Compute Engine and Microsoft Azure cloud platforms.</p>
 </blockquote>
 <p>在基于虚拟化的64位设备，如 KVM Xen（不包括VMWare）的虚拟服务器（VPS）中，Cloud内核往往是最佳选择。<br>且本人已成功在128M内存安装并启动Debian10。</p>
-<h1 id="安装步骤"><a href="#安装步骤" class="headerlink" title="安装步骤"></a>安装步骤</h1><h2 id="安装所需依赖"><a href="#安装所需依赖" class="headerlink" title="安装所需依赖"></a>安装所需依赖</h2><p><code>apt install lsb-release</code></p>
+<h1 id="安装步骤"><a href="#安装步骤" class="headerlink" title="安装步骤"></a>安装步骤</h1><h2 id="安装所需依赖"><a href="#安装所需依赖" class="headerlink" title="安装所需依赖"></a>安装所需依赖</h2><p><code>apt install -y lsb-release</code></p>
 <h2 id="添加-Backports-源"><a href="#添加-Backports-源" class="headerlink" title="添加 Backports 源"></a>添加 Backports 源</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat &gt;&gt; /etc/apt/sources.list.d/backports.list &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">deb http://deb.debian.org/debian $(lsb_release -sc)-backports main </span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#国内可考虑使用中科大的源</span></span><br><span class="line">cat &gt;&gt; /etc/apt/sources.list.d/backports.list &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">deb https://mirrors.ustc.edu.cn/debian $(lsb_release -sc)-backports main </span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
 <h2 id="执行升级"><a href="#执行升级" class="headerlink" title="执行升级"></a>执行升级</h2><p><code>apt -t $(lsb_release -sc)-backports update &amp;&amp; apt -y -t $(lsb_release -sc)-backports upgrade</code></p>
 <blockquote>
 <p>注：更新的同时可能会自动更新新内核，可重启后卸载掉</p>
 </blockquote>
-<h2 id="安装内核"><a href="#安装内核" class="headerlink" title="安装内核"></a>安装内核</h2><p><code>sudo apt -t $(lsb_release -sc)-backports install linux-image-cloud-amd64 linux-headers-cloud-amd64</code></p>
+<h2 id="安装内核"><a href="#安装内核" class="headerlink" title="安装内核"></a>安装内核</h2><p><code>apt -t $(lsb_release -sc)-backports install linux-image-cloud-amd64 linux-headers-cloud-amd64</code></p>
 <p>安装成功后重启即可食用，可使用<code>uname -r</code>查看内核是否安装成功</p>
 <h2 id="卸载原来内核"><a href="#卸载原来内核" class="headerlink" title="卸载原来内核"></a>卸载原来内核</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">dpkg -l | grep linux-image</span><br><span class="line">apt-get purge 欲卸载的旧内核</span><br></pre></td></tr></table></figure>
 <h1 id="其他注意事项"><a href="#其他注意事项" class="headerlink" title="其他注意事项"></a>其他注意事项</h1><ul>
@@ -914,6 +925,31 @@
       </tags>
   </entry>
   <entry>
+    <title>Debian9开机启动rc.local</title>
+    <url>/archives/rc-local/</url>
+    <content><![CDATA[<p>在使用较新版本的Ubuntu/Debian系统使用rc.local</p>
+<a id="more"></a>
+
+<p>在使用较新版本的Ubuntu/Debian系统时，原来写入/etc/rc.local或者/etc/rc.d/rc.local文件中的开机命令不执行了?</p>
+<blockquote>
+<p>Ubuntu 16.04以后，默认进程启动管理已经切换至systemd，不再使用init.d。</p>
+</blockquote>
+<p>如果想和之前一样使用rc.local设置开机自启动，可以通过以下步骤</p>
+<h1 id="修改rc-local-service"><a href="#修改rc-local-service" class="headerlink" title="修改rc-local.service"></a>修改rc-local.service</h1><p>我们可以发现，/lib/systemd/system/目录下存在一个rc-local.service，但缺少Install信息，系统就不认为他是个systemd服务。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat &gt; /etc/systemd/system/rc-local.service &lt;&lt;<span class="string">EOF</span></span><br><span class="line"><span class="string">Description=/etc/rc.local Compatibility</span></span><br><span class="line"><span class="string">Documentation=man:systemd-rc-local-generator(8)</span></span><br><span class="line"><span class="string">ConditionFileIsExecutable=/etc/rc.local</span></span><br><span class="line"><span class="string">After=network.target</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Service]</span></span><br><span class="line"><span class="string">Type=forking</span></span><br><span class="line"><span class="string">ExecStart=/etc/rc.local start</span></span><br><span class="line"><span class="string">TimeoutSec=0</span></span><br><span class="line"><span class="string">RemainAfterExit=yes</span></span><br><span class="line"><span class="string">GuessMainPID=no</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Install]</span></span><br><span class="line"><span class="string">WantedBy=multi-user.target</span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
+<p>加入所需启动的服务即可，记得权限<br><code>chmod +x /etc/rc.local</code></p>
+<h1 id="启动rc-local服务"><a href="#启动rc-local服务" class="headerlink" title="启动rc-local服务"></a>启动rc-local服务</h1><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start rc-local</span><br><span class="line">systemctl enable rc-local</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Debian</tag>
+        <tag>Ubuntu</tag>
+        <tag>rc.local</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Linux安装Node.js环境</title>
     <url>/archives/nodejs/</url>
     <content><![CDATA[<p>官方源或nvm方式安装nodejs<br><img  
@@ -954,31 +990,6 @@
         <tag>Nodejs</tag>
         <tag>npm</tag>
         <tag>nvm</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Debian9开机启动rc.local</title>
-    <url>/archives/rc-local/</url>
-    <content><![CDATA[<p>在使用较新版本的Ubuntu/Debian系统使用rc.local</p>
-<a id="more"></a>
-
-<p>在使用较新版本的Ubuntu/Debian系统时，原来写入/etc/rc.local或者/etc/rc.d/rc.local文件中的开机命令不执行了?</p>
-<blockquote>
-<p>Ubuntu 16.04以后，默认进程启动管理已经切换至systemd，不再使用init.d。</p>
-</blockquote>
-<p>如果想和之前一样使用rc.local设置开机自启动，可以通过以下步骤</p>
-<h1 id="修改rc-local-service"><a href="#修改rc-local-service" class="headerlink" title="修改rc-local.service"></a>修改rc-local.service</h1><p>我们可以发现，/lib/systemd/system/目录下存在一个rc-local.service，但缺少Install信息，系统就不认为他是个systemd服务。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat &gt; /etc/systemd/system/rc-local.service &lt;&lt;<span class="string">EOF</span></span><br><span class="line"><span class="string">Description=/etc/rc.local Compatibility</span></span><br><span class="line"><span class="string">Documentation=man:systemd-rc-local-generator(8)</span></span><br><span class="line"><span class="string">ConditionFileIsExecutable=/etc/rc.local</span></span><br><span class="line"><span class="string">After=network.target</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Service]</span></span><br><span class="line"><span class="string">Type=forking</span></span><br><span class="line"><span class="string">ExecStart=/etc/rc.local start</span></span><br><span class="line"><span class="string">TimeoutSec=0</span></span><br><span class="line"><span class="string">RemainAfterExit=yes</span></span><br><span class="line"><span class="string">GuessMainPID=no</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Install]</span></span><br><span class="line"><span class="string">WantedBy=multi-user.target</span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
-<p>加入所需启动的服务即可，记得权限<br><code>chmod +x /etc/rc.local</code></p>
-<h1 id="启动rc-local服务"><a href="#启动rc-local服务" class="headerlink" title="启动rc-local服务"></a>启动rc-local服务</h1><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start rc-local</span><br><span class="line">systemctl enable rc-local</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-      <tags>
-        <tag>Debian</tag>
-        <tag>Ubuntu</tag>
-        <tag>rc.local</tag>
       </tags>
   </entry>
   <entry>
@@ -1036,6 +1047,71 @@
       <tags>
         <tag>TCShare</tag>
         <tag>ctyun</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ward：一个简约美观多系统支持的云监控</title>
+    <url>/archives/ward/</url>
+    <content><![CDATA[<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>Ward是一个基于Java的简单且美观的服务器监视工具。支持暗色主题，多系统支持。<br>其中监控内容有CPU，内存使用，硬盘使用，服务器运行时间等等。</p>
+<a id="more"></a>
+<blockquote>
+<p>Ward is a simple and and minimalistic server monitoring tool. Ward supports adaptive design system. Also it supports dark theme. It shows only principal information and can be used, if you want to see nice looking dashboard instead looking on bunch of numbers and graphs. Ward works nice on all popular operating systems, because it uses OSHI.<br><a class="link"   href="https://github.com/B-Software/Ward#about" >https://github.com/B-Software/Ward#about<i class="fas fa-external-link-alt"></i></a></p>
+</blockquote>
+<h1 id="安装方式"><a href="#安装方式" class="headerlink" title="安装方式"></a>安装方式</h1><h2 id="直接运行"><a href="#直接运行" class="headerlink" title="直接运行"></a>直接运行</h2><h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p><del>在<a class="link"   href="https://github.com/B-Software/Ward/releases" > GitHub Release <i class="fas fa-external-link-alt"></i></a>下载已编译好的 <code>jar</code> 包。</del><br>由于<a class="link"   href="https://github.com/B-Software/Ward/commit/140f51106355d58a1b241abcd32a5aa6cf80cbf7" >蒙古原因<i class="fas fa-external-link-alt"></i></a>，已不支持在 <code>GitHub Release</code> 页面下载。</p>
+<p>可<a class="link"   href="https://anak.coding.net/public-artifacts/ci/ward" >在此<i class="fas fa-external-link-alt"></i></a>下载自动编译的jar文件。</p>
+<h3 id="配置Java-JRE环境"><a href="#配置Java-JRE环境" class="headerlink" title="配置Java JRE环境"></a>配置Java JRE环境</h3><p>Debian JRE的安装步骤可参考我的 <a href="https://blog.wittoy.com/archives/debian10-openjdk/">这篇文章</a> 。<br>Windows的话只能去 <a href="https://www.oracle.com/java/technologies/javase-downloads.html"><del>万恶的Oracle</del></a> 下载了。</p>
+<h3 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h3><p>Linux：<code>java -jar ward*.jar</code><br>Windows：打开命令指示符(CMD)后，同样输入 <code>java -jar ward-版本号.jar</code></p>
+<p>成功运行后，访问 <a class="link"   href="http://127.0.0.1:4000/" >localhost:4000<i class="fas fa-external-link-alt"></i></a> 后自行配置，其中 <code>Application Port</code> 设置除 <code>4000</code> 外的自定义端口。<br>保存后访问你设置的自定义端口，即可食用。</p>
+<p>附: <code>Linux Systemd</code> 配置</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mkdir /opt/Ward</span><br><span class="line">mv ward*.jar /opt/Ward/</span><br><span class="line">cat &gt; /etc/systemd/system/ward.service &lt;&lt;<span class="string">EOF</span></span><br><span class="line"><span class="string">[Unit]</span></span><br><span class="line"><span class="string">Description=Ward</span></span><br><span class="line"><span class="string">After=network.target</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Service]</span></span><br><span class="line"><span class="string">WorkingDirectory=/opt/Ward</span></span><br><span class="line"><span class="string">ExecStart=/usr/bin/java -jar ward.jar</span></span><br><span class="line"><span class="string">Type=simple</span></span><br><span class="line"><span class="string">Restart=on-failure</span></span><br><span class="line"><span class="string">RestartSec=5</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Install]</span></span><br><span class="line"><span class="string">WantedBy=multi-user.target</span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
+<p>启动&amp;开机自启：</p>
+<p><code>systemctl start ward</code><br><code>systemctl enable ward</code></p>
+<h2 id="Docker构建运行"><a href="#Docker构建运行" class="headerlink" title="Docker构建运行"></a>Docker构建运行</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> -b /opt/Ward-Docker https://github.com/B-Software/Ward.git</span><br><span class="line"><span class="built_in">cd</span> /opt/Ward-Docker</span><br><span class="line">docker build --tag ward</span><br><span class="line">docker run --rm -it --name ward -p 4000:4000 -p &lt;自定义端口&gt;:&lt;自定义端口&gt; --privileged ward</span><br><span class="line"><span class="comment"># &lt;自定义端口&gt;中输入你将要访问的外网端口，如端口设置为5000：</span></span><br><span class="line"><span class="comment"># docker run --rm -it --name ward -p 4000:4000 -p 5000:5000 --privileged ward</span></span><br></pre></td></tr></table></figure>
+<p>访问 <a class="link"   href="http://127.0.0.1:4000/" >localhost:4000<i class="fas fa-external-link-alt"></i></a> 后，根据自己个人配置设置，其中 <code>Application Port</code> 设置成 <strong>刚才设置的自定义端口</strong> 。<br>保存后访问你设置的自定义端口，即可食用。</p>
+<h2 id="自行编译安装"><a href="#自行编译安装" class="headerlink" title="自行编译安装"></a>自行编译安装</h2><p>克隆项目后。在IDE等软件中即可自定义编译后运行。</p>
+]]></content>
+      <categories>
+        <category>WebSite</category>
+      </categories>
+      <tags>
+        <tag>Ward</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>解决Windows10无法搜索已安装软件</title>
+    <url>/archives/win10-search/</url>
+    <content><![CDATA[<p>我们遇到什么Bug，也不要怕，微笑着面对他，消除阿三留下的💩的最好办法就是面对Bug，坚持，才是胜利，加油，奥利给！！！</p>
+<a id="more"></a>
+<hr>
+<p>软件安装后，大多都会在开始菜单中生成快捷方式，这样Windows Search便可以快捷地搜索到对应的软件。<br>然鹅，在1809过渡到2004后，在我心目中懒人必备的软件搜索不管用了（</p>
+<h1 id="坑1"><a href="#坑1" class="headerlink" title="坑1"></a>坑1</h1><p>索引选项中包含了「开始」 菜单，但就是搜索不到已安装的软件？<br>原因是默认索引选项包含的 “「开始」 菜单” 是 “李鬼” 。</p>
+<p>这里的「开始」 菜单 只是 <code>所有用户</code> 下的开始菜单，不包括 <code>个人用户</code> 的开始菜单。<br>Window 10对权限进行了改进，软件要想安装在 <code>所有用户</code> 下的话，必须要有管理员权限。</p>
+<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>很简单，在索引选项中添加个人用户下的开始菜单。</p>
+<p>索引选项 - 修改 - C盘 - 你的用户名 - AppData - Roaming - Microsoft Windows - 「开始」 菜单<br>确定保存即可。</p>
+<blockquote>
+<p>注：排除选项需取消AppData文件</p>
+</blockquote>
+<h1 id="坑2"><a href="#坑2" class="headerlink" title="坑2"></a>坑2</h1><p>保存了，重建索引依旧搜不到？</p>
+<p>原因：<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/90be9571-5b3b-48f4-aea8-a5a9bfdf15e2"
+                     
+                ><br>好家伙，还能这么玩.jpg</p>
+<h2 id="解决方法-1"><a href="#解决方法-1" class="headerlink" title="解决方法"></a>解决方法</h2><p>打开 <code>%APPDATA%\Microsoft\Windows</code></p>
+<p>对 <code>「开始」 菜单</code> 右键 - 属性 - 高级 - 存档和索引属性 - 除了文件属性外，还允许索引此文件夹中文件的内容<br><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://anak.coding.net/api/share/image/2b3b0b86-31c4-4415-ac08-5e63c1aa61cd"
+                     
+                ></p>
+<p>然后再重建索引，即可回归Windows Search(bushi)</p>
+]]></content>
+      <categories>
+        <category>Windows</category>
+      </categories>
+      <tags>
+        <tag>Windows Search</tag>
       </tags>
   </entry>
   <entry>
@@ -1121,71 +1197,6 @@
         <tag>Valine</tag>
         <tag>emoji</tag>
         <tag>qqmail</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Ward：一个简约美观多系统支持的云监控</title>
-    <url>/archives/ward/</url>
-    <content><![CDATA[<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>Ward是一个基于Java的简单且美观的服务器监视工具。支持暗色主题，多系统支持。<br>其中监控内容有CPU，内存使用，硬盘使用，服务器运行时间等等。</p>
-<a id="more"></a>
-<blockquote>
-<p>Ward is a simple and and minimalistic server monitoring tool. Ward supports adaptive design system. Also it supports dark theme. It shows only principal information and can be used, if you want to see nice looking dashboard instead looking on bunch of numbers and graphs. Ward works nice on all popular operating systems, because it uses OSHI.<br><a class="link"   href="https://github.com/B-Software/Ward#about" >https://github.com/B-Software/Ward#about<i class="fas fa-external-link-alt"></i></a></p>
-</blockquote>
-<h1 id="安装方式"><a href="#安装方式" class="headerlink" title="安装方式"></a>安装方式</h1><h2 id="直接运行"><a href="#直接运行" class="headerlink" title="直接运行"></a>直接运行</h2><h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p><del>在<a class="link"   href="https://github.com/B-Software/Ward/releases" > GitHub Release <i class="fas fa-external-link-alt"></i></a>下载已编译好的 <code>jar</code> 包。</del><br>由于<a class="link"   href="https://github.com/B-Software/Ward/commit/140f51106355d58a1b241abcd32a5aa6cf80cbf7" >蒙古原因<i class="fas fa-external-link-alt"></i></a>，已不支持在 <code>GitHub Release</code> 页面下载。</p>
-<p>可<a class="link"   href="https://anak.coding.net/public-artifacts/ci/ward" >在此<i class="fas fa-external-link-alt"></i></a>下载自动编译的jar文件。</p>
-<h3 id="配置Java-JRE环境"><a href="#配置Java-JRE环境" class="headerlink" title="配置Java JRE环境"></a>配置Java JRE环境</h3><p>Debian JRE的安装步骤可参考我的 <a href="https://blog.wittoy.com/archives/debian10-openjdk/">这篇文章</a> 。<br>Windows的话只能去 <a href="https://www.oracle.com/java/technologies/javase-downloads.html"><del>万恶的Oracle</del></a> 下载了。</p>
-<h3 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h3><p>Linux：<code>java -jar ward*.jar</code><br>Windows：打开命令指示符(CMD)后，同样输入 <code>java -jar ward-版本号.jar</code></p>
-<p>成功运行后，访问 <a class="link"   href="http://127.0.0.1:4000/" >localhost:4000<i class="fas fa-external-link-alt"></i></a> 后自行配置，其中 <code>Application Port</code> 设置除 <code>4000</code> 外的自定义端口。<br>保存后访问你设置的自定义端口，即可食用。</p>
-<p>附: <code>Linux Systemd</code> 配置</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mkdir /opt/Ward</span><br><span class="line">mv ward*.jar /opt/Ward/</span><br><span class="line">cat &gt; /etc/systemd/system/ward.service &lt;&lt;<span class="string">EOF</span></span><br><span class="line"><span class="string">[Unit]</span></span><br><span class="line"><span class="string">Description=Ward</span></span><br><span class="line"><span class="string">After=network.target</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Service]</span></span><br><span class="line"><span class="string">WorkingDirectory=/opt/Ward</span></span><br><span class="line"><span class="string">ExecStart=/usr/bin/java -jar ward.jar</span></span><br><span class="line"><span class="string">Type=simple</span></span><br><span class="line"><span class="string">Restart=on-failure</span></span><br><span class="line"><span class="string">RestartSec=5</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[Install]</span></span><br><span class="line"><span class="string">WantedBy=multi-user.target</span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
-<p>启动&amp;开机自启：</p>
-<p><code>systemctl start ward</code><br><code>systemctl enable ward</code></p>
-<h2 id="Docker构建运行"><a href="#Docker构建运行" class="headerlink" title="Docker构建运行"></a>Docker构建运行</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> -b /opt/Ward-Docker https://github.com/B-Software/Ward.git</span><br><span class="line"><span class="built_in">cd</span> /opt/Ward-Docker</span><br><span class="line">docker build --tag ward</span><br><span class="line">docker run --rm -it --name ward -p 4000:4000 -p &lt;自定义端口&gt;:&lt;自定义端口&gt; --privileged ward</span><br><span class="line"><span class="comment"># &lt;自定义端口&gt;中输入你将要访问的外网端口，如端口设置为5000：</span></span><br><span class="line"><span class="comment"># docker run --rm -it --name ward -p 4000:4000 -p 5000:5000 --privileged ward</span></span><br></pre></td></tr></table></figure>
-<p>访问 <a class="link"   href="http://127.0.0.1:4000/" >localhost:4000<i class="fas fa-external-link-alt"></i></a> 后，根据自己个人配置设置，其中 <code>Application Port</code> 设置成 <strong>刚才设置的自定义端口</strong> 。<br>保存后访问你设置的自定义端口，即可食用。</p>
-<h2 id="自行编译安装"><a href="#自行编译安装" class="headerlink" title="自行编译安装"></a>自行编译安装</h2><p>克隆项目后。在IDE等软件中即可自定义编译后运行。</p>
-]]></content>
-      <categories>
-        <category>WebSite</category>
-      </categories>
-      <tags>
-        <tag>Ward</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>解决Windows10无法搜索已安装软件</title>
-    <url>/archives/win10-search/</url>
-    <content><![CDATA[<p>我们遇到什么Bug，也不要怕，微笑着面对他，消除阿三留下的💩的最好办法就是面对Bug，坚持，才是胜利，加油，奥利给！！！</p>
-<a id="more"></a>
-<hr>
-<p>软件安装后，大多都会在开始菜单中生成快捷方式，这样Windows Search便可以快捷地搜索到对应的软件。<br>然鹅，在1809过渡到2004后，在我心目中懒人必备的软件搜索不管用了（</p>
-<h1 id="坑1"><a href="#坑1" class="headerlink" title="坑1"></a>坑1</h1><p>索引选项中包含了「开始」 菜单，但就是搜索不到已安装的软件？<br>原因是默认索引选项包含的 “「开始」 菜单” 是 “李鬼” 。</p>
-<p>这里的「开始」 菜单 只是 <code>所有用户</code> 下的开始菜单，不包括 <code>个人用户</code> 的开始菜单。<br>Window 10对权限进行了改进，软件要想安装在 <code>所有用户</code> 下的话，必须要有管理员权限。</p>
-<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>很简单，在索引选项中添加个人用户下的开始菜单。</p>
-<p>索引选项 - 修改 - C盘 - 你的用户名 - AppData - Roaming - Microsoft Windows - 「开始」 菜单<br>确定保存即可。</p>
-<blockquote>
-<p>注：排除选项需取消AppData文件</p>
-</blockquote>
-<h1 id="坑2"><a href="#坑2" class="headerlink" title="坑2"></a>坑2</h1><p>保存了，重建索引依旧搜不到？</p>
-<p>原因：<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://anak.coding.net/api/share/image/90be9571-5b3b-48f4-aea8-a5a9bfdf15e2"
-                     
-                ><br>好家伙，还能这么玩.jpg</p>
-<h2 id="解决方法-1"><a href="#解决方法-1" class="headerlink" title="解决方法"></a>解决方法</h2><p>打开 <code>%APPDATA%\Microsoft\Windows</code></p>
-<p>对 <code>「开始」 菜单</code> 右键 - 属性 - 高级 - 存档和索引属性 - 除了文件属性外，还允许索引此文件夹中文件的内容<br><img  
-                     lazyload
-                     src="/images/loading.svg"
-                     data-src="https://anak.coding.net/api/share/image/2b3b0b86-31c4-4415-ac08-5e63c1aa61cd"
-                     
-                ></p>
-<p>然后再重建索引，即可回归Windows Search(bushi)</p>
-]]></content>
-      <categories>
-        <category>Windows</category>
-      </categories>
-      <tags>
-        <tag>Windows Search</tag>
       </tags>
   </entry>
   <entry>
