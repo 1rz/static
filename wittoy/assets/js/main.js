@@ -86,10 +86,10 @@
 
 			// Images (in the format of 'url': 'alignment').
 			images: {
-				'https://cdn.jsdelivr.net/gh/1rz/static/images/1.webp': 'center',
-				'https://cdn.jsdelivr.net/gh/1rz/static/images/2.webp': 'center',
-				'https://cdn.jsdelivr.net/gh/1rz/static/images/3.webp': 'center',
-				'https://cdn.jsdelivr.net/gh/1rz/static/images/4.webp': 'center'
+				'//cdn.jsdelivr.net/gh/1rz/static/images/1.webp': 'center',
+				'//cdn.jsdelivr.net/gh/1rz/static/images/2.webp': 'center',
+				'//cdn.jsdelivr.net/gh/1rz/static/images/3.webp': 'center',
+				'//cdn.jsdelivr.net/gh/1rz/static/images/4.webp': 'center'
 			},
 
 			// Delay.
