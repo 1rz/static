@@ -1,0 +1,1 @@
+window.Config={SiteName:"Wittoy's Status",SiteTitle:"Wittoy's Status",SiteUrl:"/",ApiKeys:["u886547-56fc9a7891719c2428780a28"],ShowLink:!1,CountDays:90,Navi:[{text:"My Blog",url:"https://blog.wittoy.com"}]};
