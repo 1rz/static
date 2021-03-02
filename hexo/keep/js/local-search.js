@@ -212,7 +212,7 @@ KEEP.initLocalSearch = () => {
   };
 
   const fetchData = () => {
-    fetch('//cdn.jsdelivr.net/gh/1rz/static/hexo/keep/' + searchPath)
+    fetch('https://cdn.jsdelivr.net/gh/1rz/static/hexo/keep/' + searchPath)
       .then(response => response.text())
       .then(res => {
         // Get the contents from search data
