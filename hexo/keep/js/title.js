@@ -1,1 +1,0 @@
-"use strict";window.onfocus=function(){document.title="恢复正常了..."},window.onblur=function(){document.title="快回来~页面崩溃了"};

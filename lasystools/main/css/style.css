@@ -299,14 +299,14 @@ b, strong {
 }
 .color-mode-icon:after {
   font-family: 'unicons';
-  content: '\ea9f';
+  content: '\eacc';
   font-size: 30px;
   font-weight: 300;
   font-style: normal;
 }
 .color-mode-icon.active:after {
   font-family: 'unicons';
-  content: '\eb65';
+  content: '\ea81';
   font-size: 30px;
   color: #ffffff;
 }
@@ -404,11 +404,11 @@ b, strong {
   line-height: normal;
 }
 .owl-carousel .owl-nav .owl-prev:before {
-  content: '\e833';
+  content: '\e82a';
   left: -55px;
 }
 .owl-carousel .owl-nav .owl-next:before {
-  content: '\e836';
+  content: '\e82c';
   right: -55px;
 }
 

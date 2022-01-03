@@ -1,0 +1,19 @@
+{
+  "name": "staticdn",
+  "version": "0.0.2",
+  "description": "ZeroFirst’s CDN File",
+  "main": "package.json",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1rz/static.git"
+  },
+  "keywords": [
+    "1rz"
+  ],
+  "author": "1rz",
+  "license": "WTFPL",
+  "homepage": "https://github.com/1rz/static"
+}

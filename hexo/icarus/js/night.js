@@ -1,1 +1,0 @@
-"use strict";!function(){var e,t=localStorage.getItem("night");function n(t){"true"===t.toString()?document.body.classList.add("night"):document.body.classList.remove("night")}function i(){n(t=!t||"true"!==t.toString()),localStorage.setItem("night",t)}!function t(){(e=document.getElementById("night-nav"))?e.addEventListener("click",i):setTimeout(t,100)}(),t&&n(t)}();
