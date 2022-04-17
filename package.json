@@ -1,6 +1,6 @@
 {
   "name": "staticdn",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "ZeroFirst’s CDN File",
   "main": "package.json",
   "scripts": {
